@@ -389,7 +389,7 @@ export function Sidenav({ avatarUrl = '', userProfile, children }: SidenavProps)
           <SectionLabel label="Recruitment Hub" collapsed={isCollapsed} />
 
           <NavItem icon={GitBranch}   label="Pipeline"         href="/pipeline" collapsed={isCollapsed} />
-          <NavItem icon={Zap}         label="Matches"          collapsed={isCollapsed} />
+          <NavItem icon={Zap}         label="Matches"          href="/matches" collapsed={isCollapsed} />
           <NavItem icon={Calendar}    label="Interviews"       collapsed={isCollapsed} />
           <NavItem icon={Award}       label="Placements"       collapsed={isCollapsed} />
 
