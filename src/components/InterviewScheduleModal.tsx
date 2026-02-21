@@ -7,7 +7,7 @@ interface ScheduleModalProps {
   onClose: () => void;
 }
 
-export function ScheduleModal({ isOpen, onClose }: ScheduleModalProps) {
+export function InterviewScheduleModal({ isOpen, onClose }: ScheduleModalProps) {
   if (!isOpen) return null;
 
   return (

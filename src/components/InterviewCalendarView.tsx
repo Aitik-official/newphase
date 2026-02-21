@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Video, Phone, MapPin, MoreHorizontal, Users } from 'lucide-react';
 
-export function CalendarView() {
+export function InterviewCalendarView() {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const dates = Array.from({ length: 35 }, (_, i) => i - 3); // Simple mock for Feb
 

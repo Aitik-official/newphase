@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SummaryCards } from '../../components/SummaryCards';
+import { InterviewSummaryCards } from '../../components/InterviewSummaryCards';
 import { InterviewTable } from '../../components/InterviewTable';
-import { CalendarView } from '../../components/CalendarView';
-import { HorizontalFilterBar } from '../../components/HorizontalFilterBar';
-import { ScheduleModal } from '../../components/ScheduleModal';
-import { FeedbackModal } from '../../components/FeedbackModal';
+import { InterviewCalendarView } from '../../components/InterviewCalendarView';
+import { InterviewHorizontalFilterBar } from '../../components/InterviewHorizontalFilterBar';
+import { InterviewScheduleModal } from '../../components/InterviewScheduleModal';
+import { InterviewFeedbackModal } from '../../components/InterviewFeedbackModal';
 import { Plus, Calendar, List, Filter, RefreshCw, Search, Bell, Settings, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -110,7 +110,7 @@ export default function InterviewsPage() {
             </div>
 
             {/* Summary Cards */}
-            <SummaryCards />
+            <InterviewSummaryCards />
 
             {/* Horizontal Filter Bar - Now between cards and table */}
             {view === 'list' && (
@@ -119,7 +119,7 @@ export default function InterviewsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="z-10"
               >
-                <HorizontalFilterBar />
+                <InterviewHorizontalFilterBar />
               </motion.div>
             )}
 
@@ -146,7 +146,7 @@ export default function InterviewsPage() {
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <CalendarView />
+                      <InterviewCalendarView />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -157,8 +157,8 @@ export default function InterviewsPage() {
       </main>
 
       {/* Modals */}
-      <ScheduleModal isOpen={showScheduleModal} onClose={() => setShowScheduleModal(false)} />
-      <FeedbackModal 
+      <InterviewScheduleModal isOpen={showScheduleModal} onClose={() => setShowScheduleModal(false)} />
+      <InterviewFeedbackModal 
         isOpen={showFeedbackModal} 
         onClose={() => setShowFeedbackModal(false)} 
         interview={selectedInterview} 

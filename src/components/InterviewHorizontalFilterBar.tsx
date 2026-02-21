@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, ChevronDown, Filter, X, PlayCircle, Briefcase, User, Users, Video } from 'lucide-react';
 
-export function HorizontalFilterBar() {
+export function InterviewHorizontalFilterBar() {
   const filters = [
     { label: 'Date', icon: Calendar, value: 'This Week' },
     { label: 'Status', icon: PlayCircle, value: 'All Status' },

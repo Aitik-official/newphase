@@ -8,7 +8,7 @@ interface FeedbackModalProps {
   interview: any;
 }
 
-export function FeedbackModal({ isOpen, onClose, interview }: FeedbackModalProps) {
+export function InterviewFeedbackModal({ isOpen, onClose, interview }: FeedbackModalProps) {
   const [rating, setRating] = useState(0);
   const [recommendation, setRecommendation] = useState<'pass' | 'hold' | 'reject' | null>(null);
 

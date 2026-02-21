@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, MessageSquare, CheckCircle } from 'lucide-react';
 
-export function SummaryCards() {
+export function InterviewSummaryCards() {
   const cards = [
     {
       title: "Today's Interviews",
