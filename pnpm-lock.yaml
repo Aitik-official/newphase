@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@types/react-dnd-html5-backend':
-        specifier: ^3.0.2
-        version: 3.0.2
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@18.3.1)
@@ -393,10 +390,6 @@ packages:
 
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
-
-  '@types/react-dnd-html5-backend@3.0.2':
-    resolution: {integrity: sha512-sLKCHGGoXrxbx3QX9Jerg51dRjeUKD+c+HL59ZTkut5GevxJFC8PxsVpcoMchBRd9X+GUyrsaBSXGteWCpMISw==}
-    deprecated: This is a stub types definition. react-dnd-html5-backend provides its own type definitions, so you do not need this installed.
 
   '@types/react-dom@18.3.7':
     resolution: {integrity: sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ==}
@@ -2304,10 +2297,6 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/prop-types@15.7.15': {}
-
-  '@types/react-dnd-html5-backend@3.0.2':
-    dependencies:
-      react-dnd-html5-backend: 16.0.1
 
   '@types/react-dom@18.3.7(@types/react@18.3.28)':
     dependencies:

@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@types/react-dnd-html5-backend": "^3.0.2",
     "lucide-react": "^0.487.0",
     "motion": "^11.11.17",
     "next": "^15.1.0",
