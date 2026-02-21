@@ -15,7 +15,7 @@ import {
   Calendar,
   Briefcase
 } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from './ImageWithFallback';
 
 export interface Candidate {
   id: string;

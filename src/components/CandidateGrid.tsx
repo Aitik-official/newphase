@@ -10,7 +10,7 @@ import {
   Clock,
   MoreVertical
 } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from './ImageWithFallback';
 import { Candidate } from './CandidateTable';
 
 interface CandidateGridProps {
