@@ -395,9 +395,9 @@ export function Sidenav({ avatarUrl = '', userProfile, children }: SidenavProps)
 
           <Divider />
 
-          <NavItem icon={CheckSquare} label="Tasks & Activities" collapsed={isCollapsed} />
-          <NavItem icon={Mail}        label="Inbox"              collapsed={isCollapsed} badge={3} />
-          <NavItem icon={Contact}     label="Contacts"           collapsed={isCollapsed} />
+          <NavItem icon={CheckSquare} label="Tasks & Activities" href="/Task&Activites" collapsed={isCollapsed} />
+          <NavItem icon={Mail}        label="Inbox"              href="/inbox" collapsed={isCollapsed} badge={3} />
+          <NavItem icon={Contact}     label="Contacts"           href="/contacts" collapsed={isCollapsed} />
 
           <Divider />
 
