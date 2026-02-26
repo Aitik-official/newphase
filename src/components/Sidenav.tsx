@@ -409,7 +409,7 @@ export function Sidenav({ avatarUrl = '', userProfile, children }: SidenavProps)
 
           <NavItem icon={UserPlus}    label="Team"            href="/team" collapsed={isCollapsed} />
           <NavItem icon={Settings}    label="Settings"        href="/setting" collapsed={isCollapsed} />
-          <NavItem icon={ShieldCheck} label="Administration"  collapsed={isCollapsed} />
+          <NavItem icon={ShieldCheck} label="Administration"  href="/administration" collapsed={isCollapsed} />
         </div>
 
         {/* Footer */}
