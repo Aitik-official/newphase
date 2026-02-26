@@ -401,8 +401,9 @@ export function Sidenav({ avatarUrl = '', userProfile, children }: SidenavProps)
 
           <Divider />
 
-          <NavItem icon={BarChart3}   label="Reports"         collapsed={isCollapsed} />
-          <NavItem icon={CreditCard}  label="Billing"         collapsed={isCollapsed} />
+          <NavItem icon={BarChart3}   label="Reports"         href="/reports" collapsed={isCollapsed} />
+          <NavItem icon={CreditCard}  label="Billing"         href="/billing" collapsed={isCollapsed} />
+          
 
           <div className="h-4" />
 
