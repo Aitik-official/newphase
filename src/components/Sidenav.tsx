@@ -407,8 +407,8 @@ export function Sidenav({ avatarUrl = '', userProfile, children }: SidenavProps)
 
           <div className="h-4" />
 
-          <NavItem icon={UserPlus}    label="Team"            collapsed={isCollapsed} />
-          <NavItem icon={Settings}    label="Settings"        collapsed={isCollapsed} />
+          <NavItem icon={UserPlus}    label="Team"            href="/team" collapsed={isCollapsed} />
+          <NavItem icon={Settings}    label="Settings"        href="/setting" collapsed={isCollapsed} />
           <NavItem icon={ShieldCheck} label="Administration"  collapsed={isCollapsed} />
         </div>
 
