@@ -311,17 +311,17 @@ export function Sidenav({ avatarUrl = '', userProfile, children }: SidenavProps)
         {/* Search */}
         <div className="flex-1 max-w-sm">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/60 z-10" />
             <input
               type="text"
               placeholder="Search (e.g. 'Daily Tasks', 'UI Design')"
-              className="w-full text-[12px] bg-white/8 border border-white/8 rounded-full py-1.5 pl-8 pr-4 text-white placeholder:text-white/35 focus:outline-none focus:ring-1 focus:ring-teal-400/60 focus:bg-white/12 transition-all"
+              className="w-full text-[12px] bg-white/10 backdrop-blur-md border border-white/20 rounded-full py-1.5 pl-8 pr-4 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/15 focus:border-white/30 transition-all shadow-lg shadow-black/10"
             />
           </div>
         </div>
 
         {/* Centre: Quick Create */}
-        <div className="mx-6">
+        <div className="ml-[400px]">
           <QuickActionPopover />
         </div>
 
@@ -330,29 +330,29 @@ export function Sidenav({ avatarUrl = '', userProfile, children }: SidenavProps)
           <div className="flex items-center gap-4 pr-4 border-r border-white/10">
             <Tooltip content="Calendar">
               <button className="text-white/60 hover:text-white transition-colors">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-5 h-5" />
               </button>
             </Tooltip>
             <Tooltip content="Inbox">
               <button className="relative text-white/60 hover:text-white transition-colors">
-                <Mail className="w-4 h-4" />
+                <Mail className="w-5 h-5" />
                 <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">3</span>
               </button>
             </Tooltip>
             <Tooltip content="Notifications">
               <button className="relative text-white/60 hover:text-white transition-colors">
-                <Bell className="w-4 h-4" />
+                <Bell className="w-5 h-5" />
                 <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-red-500 rounded-full" />
               </button>
             </Tooltip>
             <Tooltip content="What's New">
               <button className="text-white/60 hover:text-white transition-colors">
-                <Gift className="w-4 h-4" />
+                <Gift className="w-5 h-5" />
               </button>
             </Tooltip>
             <Tooltip content="Help Center">
               <button className="text-white/60 hover:text-white transition-colors">
-                <HelpCircle className="w-4 h-4" />
+                <HelpCircle className="w-5 h-5" />
               </button>
             </Tooltip>
           </div>
