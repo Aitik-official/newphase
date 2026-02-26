@@ -292,15 +292,20 @@ export function Sidenav({ avatarUrl = '', userProfile, children }: SidenavProps)
       >
         {/* Logo area — same width as sidebar so search starts after */}
         <div
-          className="flex items-center shrink-0 transition-all duration-300"
+          className="flex items-center gap-2 shrink-0 transition-all duration-300"
           style={{ width: SIDEBAR_W - 20 }}
         >
-          <span className="font-extrabold text-white text-base tracking-widest select-none">SAASA</span>
-          {!isCollapsed && (
-            <span className="ml-1.5 text-[10px] font-medium text-teal-400 tracking-wider uppercase bg-teal-400/10 px-1.5 py-0.5 rounded">
-              B2E
-            </span>
-          )}
+          <ImageWithFallback 
+            src="/SAASA_Logo-removebg-preview 1.png" 
+            alt="SAASA Logo" 
+            className="h-8 w-auto object-contain"
+          />
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1.5 rounded-md hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+          >
+            {isCollapsed ? <Menu size={15} /> : <ChevronLeft size={15} />}
+          </button>
         </div>
 
         {/* Search */}
@@ -368,16 +373,6 @@ export function Sidenav({ avatarUrl = '', userProfile, children }: SidenavProps)
           borderRight: '1px solid rgba(255,255,255,0.05)',
         }}
       >
-        {/* Collapse toggle */}
-        <div className="flex items-center justify-end h-10 px-3 shrink-0 border-b border-white/5">
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 rounded-md hover:bg-white/10 text-[#4A6070] hover:text-white transition-colors"
-          >
-            {isCollapsed ? <Menu size={15} /> : <ChevronLeft size={15} />}
-          </button>
-        </div>
-
         {/* Scrollable nav */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-2" style={{ scrollbarWidth: 'none' }}>
           <NavItem icon={LayoutDashboard} label="Dashboard" href="/dashboard" collapsed={isCollapsed} />
