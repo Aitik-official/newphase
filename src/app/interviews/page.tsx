@@ -5,7 +5,7 @@ import { InterviewSummaryCards } from '../../components/InterviewSummaryCards';
 import { InterviewTable } from '../../components/InterviewTable';
 import { InterviewCalendarView } from '../../components/InterviewCalendarView';
 import { InterviewHorizontalFilterBar } from '../../components/InterviewHorizontalFilterBar';
-import { InterviewScheduleModal } from '../../components/InterviewScheduleModal';
+import { ScheduleInterviewModal } from '../../components/interviewscheduleinterviewmodal';
 import { InterviewFeedbackModal } from '../../components/InterviewFeedbackModal';
 import { Plus, Calendar, List, Filter, RefreshCw, Search, Bell, Settings, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -157,7 +157,7 @@ export default function InterviewsPage() {
       </main>
 
       {/* Modals */}
-      <InterviewScheduleModal isOpen={showScheduleModal} onClose={() => setShowScheduleModal(false)} />
+      <ScheduleInterviewModal isOpen={showScheduleModal} onClose={() => setShowScheduleModal(false)} />
       <InterviewFeedbackModal 
         isOpen={showFeedbackModal} 
         onClose={() => setShowFeedbackModal(false)} 
