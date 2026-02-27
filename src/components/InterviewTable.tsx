@@ -1,5 +1,7 @@
-import React from 'react';
-import { MoreVertical, Video, Phone, Users, ExternalLink, Calendar, MapPin, MessageSquare } from 'lucide-react';
+'use client';
+
+import React, { useState, useRef, useEffect } from 'react';
+import { MoreVertical, Video, Phone, Users, ExternalLink, Calendar, MapPin, MessageSquare, RotateCcw } from 'lucide-react';
 import { ImageWithFallback } from './ImageWithFallback';
 
 const INTERVIEWS = [
@@ -87,15 +89,37 @@ const INTERVIEWS = [
 
 interface InterviewTableProps {
   onAddFeedback: (interview: any) => void;
+  onReschedule?: (interview: any) => void;
   searchQuery: string;
 }
 
-export function InterviewTable({ onAddFeedback, searchQuery }: InterviewTableProps) {
+export function InterviewTable({ onAddFeedback, onReschedule, searchQuery }: InterviewTableProps) {
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [selectedInterviews, setSelectedInterviews] = useState<Set<number>>(new Set());
+  const menuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+
   const filteredInterviews = INTERVIEWS.filter(item => 
     item.candidate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.job.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.client.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openMenuId !== null) {
+        const menuElement = menuRefs.current[openMenuId];
+        if (menuElement && !menuElement.contains(event.target as Node)) {
+          setOpenMenuId(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenuId]);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -124,12 +148,44 @@ export function InterviewTable({ onAddFeedback, searchQuery }: InterviewTablePro
     }
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedInterviews(new Set(filteredInterviews.map(interview => interview.id)));
+    } else {
+      setSelectedInterviews(new Set());
+    }
+  };
+
+  const handleSelectInterview = (interviewId: number, checked: boolean) => {
+    const newSelected = new Set(selectedInterviews);
+    if (checked) {
+      newSelected.add(interviewId);
+    } else {
+      newSelected.delete(interviewId);
+    }
+    setSelectedInterviews(newSelected);
+  };
+
+  const isAllSelected = filteredInterviews.length > 0 && selectedInterviews.size === filteredInterviews.length;
+  const isIndeterminate = selectedInterviews.size > 0 && selectedInterviews.size < filteredInterviews.length;
+
   return (
     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/50 border-b border-slate-200">
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[40px]">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  ref={(input) => {
+                    if (input) input.indeterminate = isIndeterminate;
+                  }}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="size-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                />
+              </th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[20%]">Candidate</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[18%]">Job / Client</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Round / Mode</th>
@@ -143,6 +199,14 @@ export function InterviewTable({ onAddFeedback, searchQuery }: InterviewTablePro
           <tbody className="divide-y divide-slate-100">
             {filteredInterviews.map((interview) => (
               <tr key={interview.id} className="hover:bg-slate-50/50 transition-colors group">
+                <td className="px-6 py-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedInterviews.has(interview.id)}
+                    onChange={(e) => handleSelectInterview(interview.id, e.target.checked)}
+                    className="size-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                  />
+                </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-full overflow-hidden shrink-0 border border-slate-200">
@@ -213,7 +277,7 @@ export function InterviewTable({ onAddFeedback, searchQuery }: InterviewTablePro
                   </p>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-1">
+                  <div className="flex items-center justify-end gap-1 relative">
                     <button 
                       onClick={() => onAddFeedback(interview)}
                       className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors" 
@@ -224,9 +288,37 @@ export function InterviewTable({ onAddFeedback, searchQuery }: InterviewTablePro
                     <button className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-md transition-colors" title="View Details">
                       <ExternalLink className="size-4" />
                     </button>
-                    <button className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-md transition-colors">
-                      <MoreVertical className="size-4" />
-                    </button>
+                    <div className="relative" ref={(el) => { menuRefs.current[interview.id] = el; }}>
+                      <button 
+                        onClick={() => setOpenMenuId(openMenuId === interview.id ? null : interview.id)}
+                        className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-md transition-colors"
+                        title="More Options"
+                      >
+                        <MoreVertical className="size-4" />
+                      </button>
+                      {openMenuId === interview.id && (
+                        <div className="absolute right-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-50 py-1">
+                          {onReschedule && (
+                            <button
+                              onClick={() => {
+                                onReschedule(interview);
+                                setOpenMenuId(null);
+                              }}
+                              className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                            >
+                              <RotateCcw className="size-4 text-amber-600" />
+                              Reschedule
+                            </button>
+                          )}
+                          <button
+                            className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                          >
+                            <ExternalLink className="size-4 text-blue-600" />
+                            View Details
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>
