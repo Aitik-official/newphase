@@ -7,6 +7,7 @@ import { InterviewCalendarView } from '../../components/InterviewCalendarView';
 import { InterviewHorizontalFilterBar } from '../../components/InterviewHorizontalFilterBar';
 import { ScheduleInterviewModal } from '../../components/interviewscheduleinterviewmodal';
 import { InterviewFeedbackModal } from '../../components/InterviewFeedbackModal';
+import { RescheduleDrawer } from '../../components/interviewRescheduleDrawer';
 import { Plus, Calendar, List, Filter, RefreshCw, Search, Bell, Settings, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -14,6 +15,7 @@ export default function InterviewsPage() {
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showRescheduleDrawer, setShowRescheduleDrawer] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -24,6 +26,11 @@ export default function InterviewsPage() {
 
   const handleScheduleInterview = () => {
     setShowScheduleModal(true);
+  };
+
+  const handleReschedule = (interview: any) => {
+    setSelectedInterview(interview);
+    setShowRescheduleDrawer(true);
   };
 
   return (
@@ -136,7 +143,11 @@ export default function InterviewsPage() {
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <InterviewTable onAddFeedback={handleAddFeedback} searchQuery={searchQuery} />
+                      <InterviewTable 
+                        onAddFeedback={handleAddFeedback} 
+                        onReschedule={handleReschedule}
+                        searchQuery={searchQuery} 
+                      />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -162,6 +173,10 @@ export default function InterviewsPage() {
         isOpen={showFeedbackModal} 
         onClose={() => setShowFeedbackModal(false)} 
         interview={selectedInterview} 
+      />
+      <RescheduleDrawer 
+        isOpen={showRescheduleDrawer} 
+        onClose={() => setShowRescheduleDrawer(false)} 
       />
     </div>
   );
