@@ -1,63 +1,27 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { 
-  Users, 
-  Briefcase, 
-  FileText, 
-  Mail, 
-  Plus, 
-  Search, 
-  Filter, 
-  MoreVertical, 
-  Eye, 
-  Edit2, 
-  UserPlus, 
-  CheckCircle, 
+import {
+  Users,
+  Briefcase,
+  FileText,
+  Mail,
+  Plus,
+  Search,
+  Filter,
+  Eye,
+  Edit2,
+  UserPlus,
+  CheckCircle,
   XCircle,
-  Clock,
-  ChevronRight,
   Phone,
   Building2,
   ExternalLink,
-  Target
+  Target,
 } from 'lucide-react';
-import { motion as Motion, AnimatePresence } from 'motion/react';
 import { ImageWithFallback } from '../../components/ImageWithFallback';
-
-// --- Types ---
-type LeadStatus = 'New' | 'Contacted' | 'Qualified' | 'Converted' | 'Lost';
-type LeadType = 'Company' | 'Individual' | 'Referral';
-type LeadSource = 'Website' | 'LinkedIn' | 'Email' | 'Referral' | 'Campaign';
-type Priority = 'High' | 'Medium' | 'Low';
-
-interface Activity {
-  id: string;
-  type: 'Call' | 'Email' | 'Meeting';
-  date: string;
-  description: string;
-}
-
-interface Lead {
-  id: string;
-  companyName: string;
-  type: LeadType;
-  source: LeadSource;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  status: LeadStatus;
-  assignedTo: {
-    name: string;
-    avatar: string;
-  };
-  lastFollowUp: string;
-  nextFollowUp?: string;
-  priority: Priority;
-  interestedNeeds: string;
-  notes: string;
-  activities: Activity[];
-}
+import { LeadDetailsDrawer } from '../../components/LeadDetailsDrawer';
+import type { Lead, LeadStatus, Priority } from './types';
 
 // --- Mock Data ---
 const RECRUITERS = [
@@ -83,9 +47,33 @@ const INITIAL_LEADS: Lead[] = [
     interestedNeeds: 'Full-stack developers, Product Managers',
     notes: 'Looking to hire a team of 5 in the next quarter.',
     activities: [
-      { id: 'a1', type: 'Call', date: '2026-02-01', description: 'Initial discovery call. Discussed hiring plans.' },
-      { id: 'a2', type: 'Email', date: '2026-01-28', description: 'Sent agency brochure and case studies.' }
-    ]
+      {
+        id: 'a1',
+        type: 'Call',
+        date: '2026-02-01',
+        description: 'Initial discovery call. Discussed hiring plans.',
+        title: 'Call Logged',
+        outcome: 'Interested',
+        duration: '5 minutes',
+        notes: 'Client requested proposal',
+      },
+      { id: 'a2', type: 'Email', date: '2026-01-28', description: 'Sent agency brochure and case studies.', title: 'Email Sent' },
+    ],
+    industry: 'Technology',
+    companySize: '51-200',
+    website: 'https://technova.com',
+    linkedIn: 'https://linkedin.com/company/technova',
+    location: 'San Francisco, CA',
+    designation: 'Head of Talent',
+    country: 'United States',
+    city: 'San Francisco',
+    campaignName: 'Q1 2026 Outreach',
+    createdDate: '2026-01-15',
+    notesList: [
+      { id: 'ln1', title: 'Discovery call summary', content: 'Looking to hire a team of 5 in the next quarter. Full-stack and PM roles.', tags: ['HR'], createdBy: { name: 'Alex Thompson', avatar: 'https://images.unsplash.com/photo-1701463387028-3947648f1337?q=80&w=150' }, createdAt: 'Jan 15, 2026, 10:00 AM', isPinned: true },
+      { id: 'ln2', title: 'Budget and timeline', content: 'Budget approved for 5 roles. Target start April 2026.', tags: ['Finance', 'Contract'], createdBy: { name: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1712168567859-e24cbc155219?q=80&w=150' }, createdAt: 'Jan 20, 2026, 2:30 PM', isPinned: false },
+      { id: 'ln3', title: 'Feedback on proposal', content: 'David liked the SLA and fee structure. Wants to proceed with MSA.', tags: ['Feedback', 'Contract'], createdBy: { name: 'David Miller' }, createdAt: 'Feb 1, 2026, 5:00 PM', isPinned: true },
+    ],
   },
   {
     id: '2',
@@ -401,115 +389,12 @@ export default function RecruitmentAgencyDashboard() {
           </div>
         </div>
 
-        {/* Side Panel Overlay */}
-        <AnimatePresence>
-          {selectedLeadId && selectedLead && (
-            <>
-              <Motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] z-10"
-                onClick={() => setSelectedLeadId(null)}
-              />
-              <Motion.div 
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="absolute right-0 top-0 h-full w-[450px] bg-white shadow-2xl z-20 flex flex-col border-l border-slate-200"
-              >
-                {/* Panel Header */}
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0">
-                  <div className="flex items-center gap-3">
-                    <button 
-                      onClick={() => setSelectedLeadId(null)}
-                      className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full"
-                    >
-                      <ChevronRight size={24} className="rotate-180" />
-                    </button>
-                    <h2 className="text-xl font-bold text-slate-900">Lead Details</h2>
-                  </div>
-                  <button className="text-slate-400 hover:text-slate-600">
-                    <MoreVertical size={20} />
-                  </button>
-                </div>
-
-                {/* Panel Content */}
-                <div className="flex-1 overflow-y-auto">
-                  <div className="p-6">
-                    <div className="flex items-start gap-4 mb-8">
-                      <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
-                        <Building2 size={28} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="text-lg font-bold text-slate-900">{selectedLead.companyName}</h3>
-                          <StatusTag status={selectedLead.status} />
-                        </div>
-                        <p className="text-sm text-slate-500 mb-2">{selectedLead.type} • {selectedLead.source}</p>
-                        <PriorityTag priority={selectedLead.priority} />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 mb-8">
-                      <button 
-                        className="flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-                        onClick={() => handleConvert(selectedLead.id)}
-                      >
-                        <UserPlus size={16} />
-                        Convert
-                      </button>
-                      <button 
-                        className="flex items-center justify-center gap-2 py-2.5 px-4 bg-white text-slate-700 border border-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
-                        onClick={() => handleMarkLost(selectedLead.id)}
-                      >
-                        <XCircle size={16} />
-                        Lost
-                      </button>
-                    </div>
-
-                    <section className="mb-8">
-                      <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Contact</h4>
-                      <div className="space-y-4">
-                        <ContactRow icon={<Users size={16} />} label="Contact Person" value={selectedLead.contactPerson} />
-                        <ContactRow icon={<Mail size={16} />} label="Email Address" value={selectedLead.email} isLink />
-                        <ContactRow icon={<Phone size={16} />} label="Phone Number" value={selectedLead.phone} />
-                      </div>
-                    </section>
-
-                    <section className="mb-8 space-y-6">
-                      <InfoBlock icon={<Briefcase size={14} />} label="Interested Needs" value={selectedLead.interestedNeeds} isItalic />
-                      <InfoBlock icon={<FileText size={14} />} label="Internal Notes" value={selectedLead.notes} color="amber" />
-                    </section>
-
-                    <section>
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Activity Timeline</h4>
-                        <button className="text-xs font-bold text-blue-600 flex items-center gap-1">
-                          <Plus size={14} /> Add
-                        </button>
-                      </div>
-                      <div className="relative space-y-6 before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
-                        {selectedLead.activities.map((activity) => (
-                          <TimelineItem key={activity.id} activity={activity} />
-                        ))}
-                        {selectedLead.nextFollowUp && <TimelineItem nextDate={selectedLead.nextFollowUp} />}
-                      </div>
-                    </section>
-                  </div>
-                </div>
-
-                <div className="p-6 border-t border-slate-100 bg-slate-50">
-                  <div className="flex items-center gap-3">
-                    <button className="flex-1 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg">Edit</button>
-                    <button className="flex-1 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-sm">Log Activity</button>
-                  </div>
-                </div>
-              </Motion.div>
-            </>
-          )}
-        </AnimatePresence>
+        <LeadDetailsDrawer
+          lead={selectedLead ?? null}
+          onClose={() => setSelectedLeadId(null)}
+          onConvert={handleConvert}
+          onMarkLost={handleMarkLost}
+        />
       </main>
     </div>
   );
@@ -537,48 +422,3 @@ const SummaryCard = ({ label, count, color, icon }: { label: string, count: numb
   );
 };
 
-const ContactRow = ({ icon, label, value, isLink }: any) => (
-  <div className="flex items-center gap-3">
-    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">{icon}</div>
-    <div>
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className={`text-sm font-medium ${isLink ? 'text-blue-600 hover:underline cursor-pointer' : 'text-slate-900'}`}>{value}</p>
-    </div>
-  </div>
-);
-
-const InfoBlock = ({ icon, label, value, isItalic, color }: any) => (
-  <div>
-    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-      {icon} {label}
-    </h4>
-    <div className={`p-4 rounded-xl border ${color === 'amber' ? 'bg-amber-50 border-amber-100 text-amber-900' : 'bg-slate-50 border-slate-100 text-slate-700'}`}>
-      <p className={`text-sm leading-relaxed ${isItalic ? 'italic' : ''}`}>{value}</p>
-    </div>
-  </div>
-);
-
-const TimelineItem = ({ activity, nextDate }: any) => (
-  <div className="relative pl-10">
-    <div className={`absolute left-0 top-1 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center z-10 ${
-      nextDate ? 'bg-blue-600 text-white' : 
-      activity.type === 'Call' ? 'bg-blue-100 text-blue-600' : 
-      activity.type === 'Email' ? 'bg-yellow-100 text-yellow-600' : 
-      'bg-purple-100 text-purple-600'
-    }`}>
-      {nextDate ? <Clock size={14} /> : activity.type === 'Call' ? <Phone size={14} /> : activity.type === 'Email' ? <Mail size={14} /> : <Users size={14} />}
-    </div>
-    {nextDate ? (
-      <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg">
-        <span className="text-[10px] font-bold text-blue-600 uppercase">Next Follow-up</span>
-        <p className="text-sm font-bold text-slate-900 mt-0.5">{nextDate}</p>
-      </div>
-    ) : (
-      <div className="flex flex-col">
-        <span className="text-xs font-bold text-slate-400 mb-1">{activity.date}</span>
-        <p className="text-sm font-semibold text-slate-900">{activity.type}</p>
-        <p className="text-sm text-slate-600 mt-1">{activity.description}</p>
-      </div>
-    )}
-  </div>
-);

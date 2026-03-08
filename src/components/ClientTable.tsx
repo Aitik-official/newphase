@@ -1,85 +1,20 @@
 import React from 'react';
 import { MoreHorizontal, Eye, Briefcase, Mail, ChevronDown, ArrowUpDown, Check } from 'lucide-react';
 import { ImageWithFallback } from './ImageWithFallback';
+import type { Client, ClientStage } from '@/app/client/types';
 
-const clients = [
-  {
-    id: 1,
-    name: 'TechFlow Systems',
-    industry: 'Software Engineering',
-    location: 'San Francisco, CA',
-    openJobs: 12,
-    activeCandidates: 45,
-    placements: 8,
-    stage: 'Active',
-    owner: { name: 'Alex Rivera', avatar: 'https://images.unsplash.com/photo-1622169804256-0eb6873ff441?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMG1hbiUyMGF2YXRhcnxlbnwxfHx8fDE3NzAzNjIzNTR8MA&ixlib=rb-4.1.0&q=80&w=1080' },
-    lastActivity: '2 hours ago',
-    logo: 'https://images.unsplash.com/photo-1760037028517-e5cc6e3ebd3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMHRlY2glMjBsb2dvJTIwaWNvbiUyMGJsdWV8ZW58MXx8fHwxNzcwMjY3NTQxfDA&ixlib=rb-4.1.0&q=80&w=1080'
-  },
-  {
-    id: 2,
-    name: 'Stripe Payments',
-    industry: 'Fintech',
-    location: 'Dublin, IE',
-    openJobs: 5,
-    activeCandidates: 18,
-    placements: 3,
-    stage: 'Prospect',
-    owner: { name: 'Sarah Jenkins', avatar: 'https://images.unsplash.com/photo-1589220286904-3dcef62c68ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHdvbWFuJTIwYXZhdGFyfGVufDF8fHx8MTc3MDM2MjM1NHww&ixlib=rb-4.1.0&q=80&w=1080' },
-    lastActivity: 'Yesterday',
-    logo: 'https://images.unsplash.com/photo-1643299397136-a6cf89431e19?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wYW55JTIwbG9nbyUyMGljb24lMjB0ZWNoJTIwc3RhcnR1cHxlbnwxfHx8fDE3NzAzNzMxNDF8MA&ixlib=rb-4.1.0&q=80&w=1080'
-  },
-  {
-    id: 3,
-    name: 'GreenEnergy Co.',
-    industry: 'Renewables',
-    location: 'Austin, TX',
-    openJobs: 8,
-    activeCandidates: 22,
-    placements: 5,
-    stage: 'On Hold',
-    owner: { name: 'Alex Rivera', avatar: 'https://images.unsplash.com/photo-1622169804256-0eb6873ff441?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMG1hbiUyMGF2YXRhcnxlbnwxfHx8fDE3NzAzNjIzNTR8MA&ixlib=rb-4.1.0&q=80&w=1080' },
-    lastActivity: '3 days ago',
-    logo: 'https://images.unsplash.com/photo-1760037035212-216095656f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjb3Jwb3JhdGUlMjBsb2dvJTIwZGVzaWduJTIwdGVjaHxlbnwxfHx8fDE3NzAzNzMxNDZ8MA&ixlib=rb-4.1.0&q=80&w=1080'
-  },
-  {
-    id: 4,
-    name: 'Designers Inc.',
-    industry: 'Creative Agency',
-    location: 'London, UK',
-    openJobs: 3,
-    activeCandidates: 12,
-    placements: 12,
-    stage: 'Active',
-    owner: { name: 'Michael Chen', avatar: 'https://images.unsplash.com/photo-1629507208649-70919ca33793?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMG1hbiUymJ1c2luZXNzfGVufDF8fHx8MTc3MDM1NDM1MHww&ixlib=rb-4.1.0&q=80&w=1080' },
-    lastActivity: '1 hour ago',
-    logo: 'https://images.unsplash.com/photo-1581065178047-8ee15951ede6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMHdvbWFuJTIwYnVzaW5lc3N8ZW58MXx8fHwxNzcwMzI1ODIyfDA&ixlib=rb-4.1.0&q=80&w=1080'
-  },
-  {
-    id: 5,
-    name: 'BioGen Lab',
-    industry: 'Healthcare',
-    location: 'Boston, MA',
-    openJobs: 15,
-    activeCandidates: 60,
-    placements: 2,
-    stage: 'Active',
-    owner: { name: 'Sarah Jenkins', avatar: 'https://images.unsplash.com/photo-1589220286904-3dcef62c68ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHdvbWFuJTIwYXZhdGFyfGVufDF8fHx8MTc3MDM2MjM1NHww&ixlib=rb-4.1.0&q=80&w=1080' },
-    lastActivity: 'Just now',
-    logo: 'https://images.unsplash.com/photo-1760037028517-e5cc6e3ebd3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMHRlY2glMjBsb2dvJTIwaWNvbiUyMGJsdWV8ZW58MXx8fHwxNzcwMjY3NTQxfDA&ixlib=rb-4.1.0&q=80&w=1080'
-  },
-];
-
-const stageColors = {
-  'Active': 'bg-emerald-100 text-emerald-700',
-  'Prospect': 'bg-blue-100 text-blue-700',
+const stageColors: Record<ClientStage, string> = {
+  Active: 'bg-emerald-100 text-emerald-700',
+  Prospect: 'bg-blue-100 text-blue-700',
   'On Hold': 'bg-amber-100 text-amber-700',
-  'Inactive': 'bg-slate-100 text-slate-700',
+  Inactive: 'bg-slate-100 text-slate-700',
 };
 
 interface ClientTableProps {
+  clients: Client[];
   selectedIds: number[];
   onSelectionChange: (selectedIds: number[]) => void;
+  onSelectClient?: (client: Client) => void;
 }
 
 // Custom Checkbox Component for better design tool compatibility
@@ -94,7 +29,7 @@ const CustomCheckbox = ({ checked, onChange }: { checked: boolean, onChange: () 
   </div>
 );
 
-export function ClientTable({ selectedIds, onSelectionChange }: ClientTableProps) {
+export function ClientTable({ clients, selectedIds, onSelectionChange, onSelectClient }: ClientTableProps) {
   const toggleSelectAll = () => {
     if (selectedIds.length === clients.length) {
       onSelectionChange([]);
@@ -109,6 +44,12 @@ export function ClientTable({ selectedIds, onSelectionChange }: ClientTableProps
       ? selectedIds.filter(selectedId => selectedId !== id)
       : [...selectedIds, id];
     onSelectionChange(newSelection);
+  };
+
+  const handleRowClick = (client: Client) => (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('[role="checkbox"]') || target.closest('input')) return;
+    onSelectClient?.(client);
   };
 
   return (
@@ -141,12 +82,13 @@ export function ClientTable({ selectedIds, onSelectionChange }: ClientTableProps
           </thead>
           <tbody className="divide-y divide-slate-100">
             {clients.map((client) => (
-              <tr 
-                key={client.id} 
-                className={`hover:bg-blue-50/50 transition-colors group ${selectedIds.includes(client.id) ? 'bg-blue-50/80' : ''}`}
+              <tr
+                key={client.id}
+                onClick={handleRowClick(client)}
+                className={`hover:bg-blue-50/50 transition-colors group cursor-pointer ${selectedIds.includes(client.id) ? 'bg-blue-50/80' : ''}`}
               >
-                <td className="px-4 py-4">
-                  <CustomCheckbox 
+                <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                  <CustomCheckbox
                     checked={selectedIds.includes(client.id)}
                     onChange={() => toggleSelect(client.id)}
                   />
@@ -180,7 +122,7 @@ export function ClientTable({ selectedIds, onSelectionChange }: ClientTableProps
                   </span>
                 </td>
                 <td className="px-4 py-4">
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${stageColors[client.stage as keyof typeof stageColors] || 'bg-slate-100 text-slate-600'}`}>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${stageColors[client.stage] ?? 'bg-slate-100 text-slate-600'}`}>
                     {client.stage}
                   </span>
                 </td>
@@ -191,9 +133,14 @@ export function ClientTable({ selectedIds, onSelectionChange }: ClientTableProps
                   </div>
                 </td>
                 <td className="px-4 py-4 text-xs text-slate-500">{client.lastActivity}</td>
-                <td className="px-4 py-4 text-right">
+                <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1 opacity-100">
-                    <button className="p-1.5 bg-white shadow-sm border border-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-all" title="View Details">
+                    <button
+                      type="button"
+                      onClick={() => onSelectClient?.(client)}
+                      className="p-1.5 bg-white shadow-sm border border-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-all"
+                      title="View Details"
+                    >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button className="p-1.5 bg-white shadow-sm border border-slate-100 rounded-md text-slate-400 hover:text-emerald-600 transition-all" title="Create Job">
