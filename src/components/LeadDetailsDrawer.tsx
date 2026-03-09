@@ -32,7 +32,7 @@ import {
   Pin,
   Pencil,
 } from 'lucide-react';
-import type { Lead, LeadStatus, LeadSource, LeadType, LeadNote, LeadNoteTag } from '@/app/leads/types';
+import type { Lead, LeadStatus, LeadSource, LeadType, LeadNote, LeadNoteTag, Activity } from '@/app/leads/types';
 import { ImageWithFallback } from './ImageWithFallback';
 
 const CALL_OUTCOMES = ['Interested', 'Follow-up Required', 'No Answer', 'Wrong Number', 'Not Interested'];
@@ -1638,12 +1638,12 @@ export function LeadDetailsDrawer({
                       <div className="px-5 pb-5 pt-0 border-t border-slate-100 space-y-0">
                         {!overviewEditMode ? (
                           <>
-                            <FieldRow label="Company Name" value={lead.companyName} />
-                            <FieldRow label="Industry" value={lead.industry ?? ''} />
-                            <FieldRow label="Company Size" value={lead.companySize ?? ''} />
-                            <FieldRow label="Website" value={lead.website ?? ''} href={!!lead.website} />
-                            <FieldRow label="LinkedIn" value={lead.linkedIn ?? ''} href={!!lead.linkedIn} />
-                            <FieldRow label="Location" value={lead.location ?? ''} />
+                            <FieldRow label="Company Name" value={lead?.companyName ?? ''} />
+                            <FieldRow label="Industry" value={lead?.industry ?? ''} />
+                            <FieldRow label="Company Size" value={lead?.companySize ?? ''} />
+                            <FieldRow label="Website" value={lead?.website ?? ''} href={!!lead?.website} />
+                            <FieldRow label="LinkedIn" value={lead?.linkedIn ?? ''} href={!!lead?.linkedIn} />
+                            <FieldRow label="Location" value={lead?.location ?? ''} />
                           </>
                         ) : (
                           <div className="space-y-4 pt-2">
@@ -1722,12 +1722,12 @@ export function LeadDetailsDrawer({
                       <div className="px-5 pb-5 pt-0 border-t border-slate-100 space-y-0">
                         {!overviewEditMode ? (
                           <>
-                            <FieldRow label="Contact Name" value={lead.contactPerson} />
-                            <FieldRow label="Designation" value={lead.designation ?? ''} />
-                            <FieldRow label="Email" value={lead.email} href />
-                            <FieldRow label="Phone" value={lead.phone} />
-                            <FieldRow label="Country" value={lead.country ?? ''} />
-                            <FieldRow label="City" value={lead.city ?? ''} />
+                            <FieldRow label="Contact Name" value={lead?.contactPerson ?? ''} />
+                            <FieldRow label="Designation" value={lead?.designation ?? ''} />
+                            <FieldRow label="Email" value={lead?.email ?? ''} href />
+                            <FieldRow label="Phone" value={lead?.phone ?? ''} />
+                            <FieldRow label="Country" value={lead?.country ?? ''} />
+                            <FieldRow label="City" value={lead?.city ?? ''} />
                           </>
                         ) : (
                           <div className="space-y-4 pt-2">
@@ -1807,13 +1807,13 @@ export function LeadDetailsDrawer({
                       <div className="px-5 pb-5 pt-0 border-t border-slate-100 space-y-0">
                         {!overviewEditMode ? (
                           <>
-                            <FieldRow label="Lead Source" value={lead.source} />
-                            <FieldRow label="Campaign Name" value={lead.campaignName ?? ''} />
-                            <FieldRow label="Lead Owner" value={lead.assignedTo.name} />
-                            <FieldRow label="Lead Status" value={lead.status} />
-                            <FieldRow label="Created Date" value={lead.createdDate ?? ''} />
-                            <FieldRow label="Last Contacted" value={lead.lastFollowUp} />
-                            <FieldRow label="Next Follow-up" value={lead.nextFollowUp ?? ''} />
+                            <FieldRow label="Lead Source" value={lead?.source ?? ''} />
+                            <FieldRow label="Campaign Name" value={lead?.campaignName ?? ''} />
+                            <FieldRow label="Lead Owner" value={lead?.assignedTo?.name ?? ''} />
+                            <FieldRow label="Lead Status" value={lead?.status ?? ''} />
+                            <FieldRow label="Created Date" value={lead?.createdDate ?? ''} />
+                            <FieldRow label="Last Contacted" value={lead?.lastFollowUp ?? ''} />
+                            <FieldRow label="Next Follow-up" value={lead?.nextFollowUp ?? ''} />
                           </>
                         ) : (
                           <div className="space-y-4 pt-2">
@@ -1990,14 +1990,14 @@ export function LeadDetailsDrawer({
                     </div>
                     <div className="p-5 space-y-5 overflow-y-auto max-h-[50vh] min-h-0 custom-scrollbar">
                       {(() => {
-                        const matchesFilter = (a: typeof lead.activities[0]) => {
+                        const matchesFilter = (a: Activity) => {
                           if (activityFilter === 'all') return true;
                           if (activityFilter === 'calls') return a.type === 'Call';
                           if (activityFilter === 'emails') return a.type === 'Email';
                           return a.type === 'Message' || a.type === 'Meeting';
                         };
-                        const filtered = lead.activities.filter(matchesFilter);
-                        const hasItems = filtered.length > 0 || lead.nextFollowUp;
+                        const filtered = (lead?.activities ?? []).filter(matchesFilter);
+                        const hasItems = filtered.length > 0 || lead?.nextFollowUp;
 
                         return (
                           <>
@@ -2007,7 +2007,7 @@ export function LeadDetailsDrawer({
                                 <div className="absolute left-6 top-0 bottom-0 w-px bg-slate-200 z-0" />
                                 <div className="flex flex-col gap-5 flex-1 min-w-0">
                                   {filtered.map((activity) => {
-                                    const user = activity.user ?? lead.assignedTo;
+                                    const user = activity.user ?? lead?.assignedTo;
                                     const title = activity.title ?? activity.type;
                                     const isCall = activity.type === 'Call';
                                     const isEmail = activity.type === 'Email';
@@ -2081,7 +2081,7 @@ export function LeadDetailsDrawer({
                                       </div>
                                     );
                                   })}
-                                  {lead.nextFollowUp && (
+                                  {lead?.nextFollowUp && (
                                     <div className="flex gap-4 items-start flex-shrink-0">
                                       <div className="w-12 flex justify-center shrink-0 relative z-10">
                                         <div className="w-7 h-7 rounded-full border-2 border-white bg-teal-500 text-white flex items-center justify-center shadow-sm">
@@ -2090,7 +2090,7 @@ export function LeadDetailsDrawer({
                                       </div>
                                       <div className="flex-1 min-w-0 bg-teal-50 border border-teal-100 rounded-xl p-4">
                                         <span className="text-[10px] font-bold text-teal-600 uppercase tracking-wider">Next Follow-up</span>
-                                        <p className="text-sm font-semibold text-slate-900 mt-1">{lead.nextFollowUp}</p>
+                                        <p className="text-sm font-semibold text-slate-900 mt-1">{lead?.nextFollowUp}</p>
                                       </div>
                                     </div>
                                   )}
@@ -2107,7 +2107,7 @@ export function LeadDetailsDrawer({
                 </div>
               ) : activeTab === 'notes' ? (
                 (() => {
-                  const allNotes = lead.notesList ?? [];
+                  const allNotes = lead?.notesList ?? [];
                   const filteredNotes = notesTagFilter === 'All'
                     ? allNotes
                     : allNotes.filter((n) => n.tags.includes(notesTagFilter));
