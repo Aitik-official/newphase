@@ -184,6 +184,7 @@ const PriorityTag = ({ priority }: { priority: Priority }) => {
 export default function RecruitmentAgencyDashboard() {
   const [leads, setLeads] = useState<Lead[]>(INITIAL_LEADS);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [addLeadDrawerOpen, setAddLeadDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'All'>('All');
   
@@ -225,7 +226,11 @@ export default function RecruitmentAgencyDashboard() {
             <h1 className="text-2xl font-bold text-slate-900 leading-tight">Leads</h1>
             <p className="text-sm text-slate-500">Track, manage, and convert potential clients into active hiring partners</p>
           </div>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-sm active:scale-95">
+          <button
+            type="button"
+            onClick={() => setAddLeadDrawerOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-sm active:scale-95"
+          >
             <Plus size={18} />
             <span>Add Lead</span>
           </button>
@@ -389,12 +394,40 @@ export default function RecruitmentAgencyDashboard() {
           </div>
         </div>
 
-        <LeadDetailsDrawer
-          lead={selectedLead ?? null}
-          onClose={() => setSelectedLeadId(null)}
-          onConvert={handleConvert}
-          onMarkLost={handleMarkLost}
-        />
+        {(selectedLead || addLeadDrawerOpen) && (
+          <LeadDetailsDrawer
+            lead={selectedLead ?? null}
+            addLeadMode={addLeadDrawerOpen}
+            onClose={() => {
+              setSelectedLeadId(null);
+              setAddLeadDrawerOpen(false);
+            }}
+            onAddLead={(data) => {
+              const newLead: Lead = {
+                id: String(leads.length + 1),
+                companyName: data.companyName,
+                type: data.type ?? 'Company',
+                source: data.source ?? 'Website',
+                contactPerson: data.contactPerson,
+                email: data.email,
+                phone: data.phone ?? '',
+                status: data.status ?? 'New',
+                assignedTo: RECRUITERS.find((r) => r.name === (data.assignedToName ?? RECRUITERS[0].name)) ?? RECRUITERS[0],
+                lastFollowUp: '',
+                nextFollowUp: '',
+                priority: (data.priority as Priority) ?? 'Medium',
+                interestedNeeds: data.interestedNeeds ?? '',
+                notes: data.notes ?? '',
+                activities: [],
+              };
+              setLeads((prev) => [newLead, ...prev]);
+              setAddLeadDrawerOpen(false);
+              setSelectedLeadId(newLead.id);
+            }}
+            onConvert={handleConvert}
+            onMarkLost={handleMarkLost}
+          />
+        )}
       </main>
     </div>
   );

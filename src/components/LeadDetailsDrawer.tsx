@@ -32,7 +32,7 @@ import {
   Pin,
   Pencil,
 } from 'lucide-react';
-import type { Lead, LeadStatus, LeadSource, LeadNote, LeadNoteTag } from '@/app/leads/types';
+import type { Lead, LeadStatus, LeadSource, LeadType, LeadNote, LeadNoteTag } from '@/app/leads/types';
 import { ImageWithFallback } from './ImageWithFallback';
 
 const CALL_OUTCOMES = ['Interested', 'Follow-up Required', 'No Answer', 'Wrong Number', 'Not Interested'];
@@ -65,9 +65,27 @@ export type MarkLostFormData = {
   notes: string;
 };
 
+export type AddLeadFormData = {
+  companyName: string;
+  contactPerson: string;
+  email: string;
+  phone?: string;
+  type?: LeadType;
+  source?: LeadSource;
+  status?: LeadStatus;
+  assignedToName?: string;
+  priority?: 'High' | 'Medium' | 'Low';
+  interestedNeeds?: string;
+  notes?: string;
+};
+
 interface LeadDetailsDrawerProps {
   lead: Lead | null;
+  /** When true, drawer opens in "Add Lead" mode (no lead selected) */
+  addLeadMode?: boolean;
   onClose: () => void;
+  /** Called when user submits the Add Lead form */
+  onAddLead?: (data: AddLeadFormData) => void;
   onConvert?: (id: string) => void;
   onMarkLost?: (id: string, formData?: MarkLostFormData) => void;
   onAssignLead?: (id: string, formData: AssignLeadFormData) => void;
@@ -95,15 +113,34 @@ const FieldRow = ({
 
 export function LeadDetailsDrawer({
   lead,
+  addLeadMode = false,
   onClose,
+  onAddLead,
   onConvert,
   onMarkLost,
   onAssignLead,
   onDeleteLead,
 }: LeadDetailsDrawerProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'activities' | 'notes' | 'files'>(
+  const [activeTab, setActiveTab] = useState<'overview' | 'activities' | 'notes' | 'files' | 'add'>(
     'overview'
   );
+  useEffect(() => {
+    if (addLeadMode) setActiveTab('add');
+  }, [addLeadMode]);
+
+  const [addLeadForm, setAddLeadForm] = useState<AddLeadFormData>({
+    companyName: '',
+    contactPerson: '',
+    email: '',
+    phone: '',
+    type: 'Company',
+    source: 'Website',
+    status: 'New',
+    assignedToName: '',
+    priority: 'Medium',
+    interestedNeeds: '',
+    notes: '',
+  });
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [overviewOpen, setOverviewOpen] = useState<Record<string, boolean>>({
     company: false,
@@ -312,16 +349,18 @@ export function LeadDetailsDrawer({
     // TODO: onUpdateLead?.(lead.id, overviewEditForm);
   };
 
-  const tabs = [
-    { id: 'overview' as const, label: 'Overview', icon: LayoutGrid },
-    { id: 'activities' as const, label: 'Activities', icon: Activity },
-    { id: 'notes' as const, label: 'Notes', icon: StickyNote },
-    { id: 'files' as const, label: 'Files', icon: Paperclip },
-  ];
+  const tabs = addLeadMode
+    ? [{ id: 'add' as const, label: 'Add Lead', icon: UserPlus }]
+    : [
+        { id: 'overview' as const, label: 'Overview', icon: LayoutGrid },
+        { id: 'activities' as const, label: 'Activities', icon: Activity },
+        { id: 'notes' as const, label: 'Notes', icon: StickyNote },
+        { id: 'files' as const, label: 'Files', icon: Paperclip },
+      ];
 
   return (
     <AnimatePresence>
-      {lead && (
+      {(lead || addLeadMode) && (
         <>
           <motion.div
             key="backdrop"
@@ -346,16 +385,22 @@ export function LeadDetailsDrawer({
                 <Building2 size={20} />
               </div>
               <div className="min-w-0">
-                <h2 className="text-lg font-bold text-slate-900 truncate">{lead.companyName}</h2>
-                  <span
-                  className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[lead.status]}`}
-                >
-                  {lead.status}
-                </span>
+                {addLeadMode ? (
+                  <h2 className="text-lg font-bold text-slate-900">Add Lead</h2>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900 truncate">{lead!.companyName}</h2>
+                    <span
+                      className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[lead!.status]}`}
+                    >
+                      {lead!.status}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              {activeTab === 'overview' && !overviewEditMode && (
+              {!addLeadMode && activeTab === 'overview' && !overviewEditMode && (
                 <button
                   type="button"
                   onClick={startOverviewEdit}
@@ -365,7 +410,7 @@ export function LeadDetailsDrawer({
                   <Edit2 size={18} />
                 </button>
               )}
-              {activeTab === 'overview' && overviewEditMode && (
+              {!addLeadMode && activeTab === 'overview' && overviewEditMode && (
                 <>
                   <button
                     type="button"
@@ -383,6 +428,16 @@ export function LeadDetailsDrawer({
                   </button>
                 </>
               )}
+              {addLeadMode ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  aria-label="Close"
+                >
+                  <XCircle size={20} />
+                </button>
+              ) : (
               <div className="relative">
                 <button
                   onClick={() => setMoreMenuOpen((v) => !v)}
@@ -416,6 +471,7 @@ export function LeadDetailsDrawer({
                   </>
                 )}
               </div>
+              )}
             </div>
           </div>
 
@@ -442,6 +498,7 @@ export function LeadDetailsDrawer({
                   );
                 })}
               </div>
+              {!addLeadMode && (
               <button
                 type="button"
                 onClick={() => setShowDuplicateNotification(true)}
@@ -450,6 +507,7 @@ export function LeadDetailsDrawer({
               >
                 <Copy size={16} />
               </button>
+              )}
             </div>
           </div>
 
@@ -1397,6 +1455,164 @@ export function LeadDetailsDrawer({
                       <XCircle size={16} />
                       Confirm Lost
                     </button>
+                  </div>
+                </div>
+              ) : activeTab === 'add' ? (
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-slate-100">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">New lead</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Add a new lead. Required: Company name, contact person, email.</p>
+                    </div>
+                    <div className="p-5 space-y-4">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Company name *</label>
+                        <input
+                          value={addLeadForm.companyName}
+                          onChange={(e) => setAddLeadForm((p) => ({ ...p, companyName: e.target.value }))}
+                          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          placeholder="e.g. Acme Inc."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contact person *</label>
+                        <input
+                          value={addLeadForm.contactPerson}
+                          onChange={(e) => setAddLeadForm((p) => ({ ...p, contactPerson: e.target.value }))}
+                          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          placeholder="e.g. John Doe"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Email *</label>
+                        <input
+                          type="email"
+                          value={addLeadForm.email}
+                          onChange={(e) => setAddLeadForm((p) => ({ ...p, email: e.target.value }))}
+                          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          placeholder="email@company.com"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Phone</label>
+                        <input
+                          value={addLeadForm.phone ?? ''}
+                          onChange={(e) => setAddLeadForm((p) => ({ ...p, phone: e.target.value }))}
+                          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          placeholder="+1 (555) 000-0000"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Type</label>
+                          <select
+                            value={addLeadForm.type ?? 'Company'}
+                            onChange={(e) => setAddLeadForm((p) => ({ ...p, type: e.target.value as LeadType }))}
+                            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          >
+                            <option value="Company">Company</option>
+                            <option value="Individual">Individual</option>
+                            <option value="Referral">Referral</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Source</label>
+                          <select
+                            value={addLeadForm.source ?? 'Website'}
+                            onChange={(e) => setAddLeadForm((p) => ({ ...p, source: e.target.value as LeadSource }))}
+                            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          >
+                            <option value="Website">Website</option>
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Email">Email</option>
+                            <option value="Referral">Referral</option>
+                            <option value="Campaign">Campaign</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status</label>
+                          <select
+                            value={addLeadForm.status ?? 'New'}
+                            onChange={(e) => setAddLeadForm((p) => ({ ...p, status: e.target.value as LeadStatus }))}
+                            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          >
+                            <option value="New">New</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Qualified">Qualified</option>
+                            <option value="Converted">Converted</option>
+                            <option value="Lost">Lost</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Priority</label>
+                          <select
+                            value={addLeadForm.priority ?? 'Medium'}
+                            onChange={(e) => setAddLeadForm((p) => ({ ...p, priority: e.target.value as 'High' | 'Medium' | 'Low' }))}
+                            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          >
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Assigned to</label>
+                        <select
+                          value={addLeadForm.assignedToName ?? ''}
+                          onChange={(e) => setAddLeadForm((p) => ({ ...p, assignedToName: e.target.value }))}
+                          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                        >
+                          <option value="">Select recruiter</option>
+                          {ASSIGN_RECRUITERS.map((r) => (
+                            <option key={r.name} value={r.name}>{r.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Interested needs</label>
+                        <input
+                          value={addLeadForm.interestedNeeds ?? ''}
+                          onChange={(e) => setAddLeadForm((p) => ({ ...p, interestedNeeds: e.target.value }))}
+                          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          placeholder="e.g. Full-stack developers"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Notes</label>
+                        <textarea
+                          value={addLeadForm.notes ?? ''}
+                          onChange={(e) => setAddLeadForm((p) => ({ ...p, notes: e.target.value }))}
+                          rows={3}
+                          className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                          placeholder="Optional notes"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={onClose}
+                          className="px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!addLeadForm.companyName.trim() || !addLeadForm.contactPerson.trim() || !addLeadForm.email.trim()) return;
+                            onAddLead?.(addLeadForm);
+                            setAddLeadForm({ companyName: '', contactPerson: '', email: '', phone: '', type: 'Company', source: 'Website', status: 'New', assignedToName: '', priority: 'Medium', interestedNeeds: '', notes: '' });
+                          }}
+                          disabled={!addLeadForm.companyName.trim() || !addLeadForm.contactPerson.trim() || !addLeadForm.email.trim()}
+                          className="px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                        >
+                          <Plus size={16} />
+                          Create Lead
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : activeTab === 'overview' ? (
