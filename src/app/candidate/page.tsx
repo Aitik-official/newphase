@@ -11,7 +11,9 @@ import {
   LayoutGrid, 
   List, 
   Plus,
+  CheckSquare,
 } from 'lucide-react';
+import { CreateTaskModal } from '../../components/CreateTaskModal';
 // import { Toaster } from 'sonner'; // Uncomment if sonner is installed
 
 // Mock data
@@ -128,6 +130,7 @@ export default function CandidatesPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
 
   const filteredCandidates = useMemo(() => {
     if (activeStage === 'all') return MOCK_CANDIDATES;
@@ -183,6 +186,13 @@ export default function CandidatesPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setCreateTaskOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors shadow-sm"
+              >
+                <CheckSquare size={16} />
+                Add Task
+              </button>
               <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm shadow-blue-100">
                 <Plus size={16} />
                 Add Candidate
@@ -228,6 +238,13 @@ export default function CandidatesPage() {
       <FilterDrawer 
         isOpen={isFilterOpen} 
         onClose={() => setIsFilterOpen(false)} 
+      />
+
+      <CreateTaskModal
+        isOpen={createTaskOpen}
+        onClose={() => setCreateTaskOpen(false)}
+        onSuccess={() => setCreateTaskOpen(false)}
+        initialRelatedTo="Candidate"
       />
 
       {/* <Toaster position="top-right" richColors /> */}

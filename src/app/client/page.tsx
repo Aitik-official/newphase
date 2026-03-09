@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Building2,
   AlertCircle,
+  CheckSquare,
 } from 'lucide-react';
 import { ClientSummaryMetrics } from '../../components/ClientSummaryMetrics';
 import { ClientTable } from '../../components/ClientTable';
@@ -20,6 +21,7 @@ import { ClientFilterDrawer } from '../../components/ClientFilterDrawer';
 import { ClientBulkActionsBar } from '../../components/ClientBulkActionsBar';
 import { ClientDetailsDrawer } from '../../components/ClientDetailsDrawer';
 import { ClientImportDrawer } from '../../components/ClientImportDrawer';
+import { CreateTaskModal } from '../../components/CreateTaskModal';
 import { INITIAL_CLIENTS } from './types';
 import type { Client } from './types';
 
@@ -94,6 +96,7 @@ export default function App() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isEmpty, setIsEmpty] = useState(false);
   const [showImportDrawer, setShowImportDrawer] = useState(false);
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const clients = INITIAL_CLIENTS;
 
   return (
@@ -117,6 +120,12 @@ export default function App() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-600 font-semibold hover:bg-slate-50 transition-all shadow-sm"
               >
                 <Upload className="w-4 h-4" /> Import Clients
+              </button>
+              <button
+                onClick={() => setCreateTaskOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-600 font-semibold hover:bg-slate-50 transition-all shadow-sm"
+              >
+                <CheckSquare className="w-4 h-4" /> Create Task
               </button>
               <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">
                 <Plus className="w-5 h-5" /> Add Client
@@ -197,7 +206,12 @@ export default function App() {
         onClose={() => setShowImportDrawer(false)}
         onImportComplete={() => { /* TODO: refresh client list */ }}
       />
-      
+      <CreateTaskModal
+        isOpen={createTaskOpen}
+        onClose={() => setCreateTaskOpen(false)}
+        onSuccess={() => setCreateTaskOpen(false)}
+        initialRelatedTo="Client"
+      />
       <ClientBulkActionsBar 
         selectedCount={selectedClients.length} 
         onClear={() => setSelectedClients([])} 

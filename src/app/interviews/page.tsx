@@ -8,8 +8,9 @@ import { InterviewHorizontalFilterBar } from '../../components/InterviewHorizont
 import { ScheduleInterviewModal } from '../../components/interviewscheduleinterviewmodal';
 import { InterviewFeedbackModal } from '../../components/InterviewFeedbackModal';
 import { RescheduleDrawer } from '../../components/interviewRescheduleDrawer';
-import { Plus, Calendar, List, Filter, RefreshCw, Search, Bell, Settings, User } from 'lucide-react';
+import { Plus, Calendar, List, Filter, RefreshCw, Search, Bell, Settings, User, CheckSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { CreateTaskModal } from '../../components/CreateTaskModal';
 
 export default function InterviewsPage() {
   const [view, setView] = useState<'list' | 'calendar'>('list');
@@ -18,6 +19,7 @@ export default function InterviewsPage() {
   const [showRescheduleDrawer, setShowRescheduleDrawer] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
 
   const handleAddFeedback = (interview: any) => {
     setSelectedInterview(interview);
@@ -105,7 +107,13 @@ export default function InterviewsPage() {
                   <RefreshCw className="size-4" />
                   Refresh
                 </button>
-                
+                <button
+                  onClick={() => setCreateTaskOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-[#e2e8f0] rounded-[10px] text-[14px] font-medium text-[#314158] hover:bg-slate-50 transition-colors shadow-sm cursor-pointer"
+                >
+                  <CheckSquare className="size-4" />
+                  Add Task
+                </button>
                 <button 
                   onClick={handleScheduleInterview}
                   className="flex items-center gap-2 px-5 py-2.5 bg-[#155dfc] text-white rounded-[10px] text-[14px] font-bold hover:bg-blue-700 shadow-[0px_1px_3px_0px_#bedbff,0px_1px_2px_0px_#bedbff] transition-all active:scale-95 cursor-pointer"
@@ -177,6 +185,12 @@ export default function InterviewsPage() {
       <RescheduleDrawer 
         isOpen={showRescheduleDrawer} 
         onClose={() => setShowRescheduleDrawer(false)} 
+      />
+      <CreateTaskModal
+        isOpen={createTaskOpen}
+        onClose={() => setCreateTaskOpen(false)}
+        onSuccess={() => setCreateTaskOpen(false)}
+        initialRelatedTo="Interview"
       />
     </div>
   );

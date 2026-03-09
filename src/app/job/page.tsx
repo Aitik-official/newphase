@@ -19,9 +19,12 @@ import {
   Clock, 
   AlertCircle, 
   Flame,
-  MoreHorizontal
+  MoreHorizontal,
+  CheckSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { CreateTaskModal } from '../../components/CreateTaskModal';
+import { JobDetailsDrawer, type JobForDrawer, type JobCandidateItem } from '../../components/JobDetailsDrawer';
 
 // Types
 type JobStatus = 'Active' | 'On Hold' | 'Closed';
@@ -45,6 +48,64 @@ interface Job {
   slaRisk: boolean;
 }
 
+/** Map list Job to drawer JobForDrawer with optional overview fields */
+function toJobForDrawer(j: Job): JobForDrawer {
+  const status = j.status as JobForDrawer['status'];
+  return {
+    ...j,
+    status,
+    employmentType: 'Full-time',
+    salaryRange: j.title.includes('Senior') ? '$120k – $160k' : j.title.includes('Lead') ? '$140k – $180k' : '$90k – $130k',
+    postedDate: j.createdDate,
+    recruiter: j.owner,
+    hiringManager: '—',
+    overview: JOB_OVERVIEW_MOCK[j.id]?.overview,
+    keyResponsibilities: JOB_OVERVIEW_MOCK[j.id]?.keyResponsibilities,
+    requiredSkills: JOB_OVERVIEW_MOCK[j.id]?.requiredSkills,
+    preferredSkills: JOB_OVERVIEW_MOCK[j.id]?.preferredSkills,
+    experienceRequired: JOB_OVERVIEW_MOCK[j.id]?.experienceRequired,
+    education: JOB_OVERVIEW_MOCK[j.id]?.education,
+    benefits: JOB_OVERVIEW_MOCK[j.id]?.benefits,
+  };
+}
+
+const JOB_OVERVIEW_MOCK: Record<string, Partial<Pick<JobForDrawer, 'overview' | 'keyResponsibilities' | 'requiredSkills' | 'preferredSkills' | 'experienceRequired' | 'education' | 'benefits'>>> = {
+  'JOB-2024-001': {
+    overview: 'We are looking for a Senior Frontend Engineer to own the client-side experience of our product suite. You will work with design and backend teams to build performant, accessible UIs.',
+    keyResponsibilities: ['Build and maintain React-based applications', 'Collaborate with UX on design system', 'Mentor junior developers', 'Own frontend performance and accessibility'],
+    requiredSkills: ['React', 'TypeScript', 'CSS', 'REST APIs'],
+    preferredSkills: ['Next.js', 'GraphQL', 'Testing (Jest, RTL)'],
+    experienceRequired: '5+ years in frontend development',
+    education: 'BS in Computer Science or equivalent',
+    benefits: ['Health insurance', 'Remote flexibility', 'Learning budget', 'Equity'],
+  },
+  'JOB-2024-002': {
+    overview: 'Product Designer to lead UI/UX for our consumer and enterprise products.',
+    keyResponsibilities: ['Create end-to-end flows and prototypes', 'Run user research and usability tests', 'Work with engineering on implementation'],
+    requiredSkills: ['Figma', 'User Research', 'Prototyping'],
+    preferredSkills: ['Design systems', 'Animation', 'HTML/CSS'],
+    experienceRequired: '4+ years product design',
+    education: 'Design or related field',
+    benefits: ['Health', 'Remote', 'Wellness stipend'],
+  },
+};
+
+const MOCK_JOB_CANDIDATES: Record<string, JobCandidateItem[]> = {
+  'JOB-2024-001': [
+    { id: 'jc1', candidateName: 'Sarah Jenkins', currentStage: 'Shortlisted', score: '92%', recruiter: 'Alex Rivers', interviewStatus: 'Scheduled', lastActivity: 'Feb 10, 10:30 AM' },
+    { id: 'jc2', candidateName: 'Marcus Chen', currentStage: 'Interview', score: '88%', recruiter: 'Alex Rivers', interviewStatus: 'Completed', lastActivity: 'Feb 9, 3:00 PM' },
+    { id: 'jc3', candidateName: 'Emma Wilson', currentStage: 'Applied', score: '85%', recruiter: 'Sarah Chen', interviewStatus: 'Not scheduled', lastActivity: 'Feb 8, 11:00 AM' },
+    { id: 'jc4', candidateName: 'James Liu', currentStage: 'Offered', score: '90%', recruiter: 'Alex Rivers', interviewStatus: 'Accepted', lastActivity: 'Feb 11, 9:00 AM' },
+  ],
+  'JOB-2024-002': [
+    { id: 'jc5', candidateName: 'Priya Sharma', currentStage: 'Interview', score: '87%', recruiter: 'Sarah Chen', interviewStatus: 'Scheduled', lastActivity: 'Feb 10, 2:00 PM' },
+    { id: 'jc6', candidateName: 'David Park', currentStage: 'Applied', score: '82%', recruiter: 'Sarah Chen', interviewStatus: 'Not scheduled', lastActivity: 'Feb 9, 4:30 PM' },
+  ],
+  'JOB-2024-003': [
+    { id: 'jc7', candidateName: 'Alex Kim', currentStage: 'Shortlisted', score: '91%', recruiter: 'Alex Rivers', interviewStatus: 'Not scheduled', lastActivity: 'Feb 7, 1:00 PM' },
+  ],
+};
+
 interface JobStatusPillProps {
   status: JobStatus;
 }
@@ -58,10 +119,12 @@ interface PipelineSnapshotProps {
 
 interface JobsListViewProps {
   jobs: Job[];
+  onJobClick?: (job: Job) => void;
 }
 
 interface JobsBoardViewProps {
   jobs: Job[];
+  onJobClick?: (job: Job) => void;
 }
 
 // Mock Data
@@ -218,7 +281,7 @@ const PipelineSnapshot = ({ applied, interviewed, offered, joined }: PipelineSna
   </div>
 );
 
-const JobsListView = ({ jobs }: JobsListViewProps) => (
+const JobsListView = ({ jobs, onJobClick }: JobsListViewProps) => (
   <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
     <table className="w-full text-left border-collapse">
       <thead className="bg-gray-50 sticky top-0 z-10">
@@ -237,8 +300,12 @@ const JobsListView = ({ jobs }: JobsListViewProps) => (
       </thead>
       <tbody className="divide-y divide-gray-100">
         {jobs.map((job) => (
-          <tr key={job.id} className="hover:bg-gray-50/50 transition-colors group">
-            <td className="p-4">
+          <tr
+            key={job.id}
+            onClick={() => onJobClick?.(job)}
+            className="hover:bg-gray-50/50 transition-colors group cursor-pointer"
+          >
+            <td className="p-4" onClick={(e) => e.stopPropagation()}>
               <input type="checkbox" className="rounded border-gray-300" />
             </td>
             <td className="p-4">
@@ -246,7 +313,7 @@ const JobsListView = ({ jobs }: JobsListViewProps) => (
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-gray-900">{job.title}</span>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <FileText size={14} className="text-gray-400 hover:text-blue-600 cursor-pointer" />
+                    <FileText size={14} className="text-gray-400 hover:text-blue-600 cursor-pointer" onClick={(e) => { e.stopPropagation(); onJobClick?.(job); }} />
                     <BrainCircuit size={14} className="text-purple-400 hover:text-purple-600 cursor-pointer" />
                   </div>
                 </div>
@@ -310,9 +377,9 @@ const JobsListView = ({ jobs }: JobsListViewProps) => (
                 <span className="text-[11px] text-gray-400 mt-1">{job.createdDate}</span>
               </div>
             </td>
-            <td className="p-4 text-right">
+            <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-end gap-1">
-                <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-blue-600 transition-colors">
+                <button type="button" onClick={() => onJobClick?.(job)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-blue-600 transition-colors" title="Preview job">
                   <Eye size={16} />
                 </button>
                 <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-blue-600 transition-colors">
@@ -344,7 +411,7 @@ const JobsListView = ({ jobs }: JobsListViewProps) => (
   </div>
 );
 
-const JobsBoardView = ({ jobs }: JobsBoardViewProps) => {
+const JobsBoardView = ({ jobs, onJobClick }: JobsBoardViewProps) => {
   const columns = [
     { id: 'new', label: 'New Candidates', count: 12 },
     { id: 'shortlist', label: 'Shortlisted', count: 8 },
@@ -369,7 +436,7 @@ const JobsBoardView = ({ jobs }: JobsBoardViewProps) => {
           
           <div className="flex flex-col gap-3">
             {jobs.slice(0, 3).map((job) => (
-              <div key={job.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-blue-400 cursor-pointer transition-all">
+              <div key={job.id} role="button" tabIndex={0} onClick={() => onJobClick?.(job)} onKeyDown={(e) => e.key === 'Enter' && onJobClick?.(job)} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-blue-400 cursor-pointer transition-all">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex flex-col">
                     <span className="text-xs font-mono text-gray-400 mb-1">{job.id}</span>
@@ -413,6 +480,14 @@ const JobsBoardView = ({ jobs }: JobsBoardViewProps) => {
 export default function JobsPage() {
   const [view, setView] = useState<'list' | 'board'>('list');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [jobDrawerOpen, setJobDrawerOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+
+  const openJobDrawer = (job: Job) => {
+    setSelectedJob(job);
+    setJobDrawerOpen(true);
+  };
 
   return (
     <div className="w-full min-h-screen bg-gray-50 font-sans text-gray-900">
@@ -445,6 +520,13 @@ export default function JobsPage() {
                 </div>
                 <button className="p-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
                   <RefreshCcw size={20} />
+                </button>
+                <button
+                  onClick={() => setCreateTaskOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-sm"
+                >
+                  <CheckSquare size={18} />
+                  Create Task
                 </button>
                 <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
                   <Plus size={20} />
@@ -583,14 +665,36 @@ export default function JobsPage() {
               transition={{ duration: 0.3 }}
             >
               {view === 'list' ? (
-                <JobsListView jobs={JOBS_DATA} />
+                <JobsListView jobs={JOBS_DATA} onJobClick={openJobDrawer} />
               ) : (
-                <JobsBoardView jobs={JOBS_DATA} />
+                <JobsBoardView jobs={JOBS_DATA} onJobClick={openJobDrawer} />
               )}
             </motion.div>
 
           </div>
         </div>
+
+      <JobDetailsDrawer
+        isOpen={jobDrawerOpen}
+        onClose={() => { setJobDrawerOpen(false); setSelectedJob(null); }}
+        job={selectedJob ? toJobForDrawer(selectedJob) : null}
+        jobCandidates={selectedJob ? (MOCK_JOB_CANDIDATES[selectedJob.id] ?? []) : []}
+        onEdit={(job) => { /* TODO: open edit job flow */ }}
+        onPublish={(job) => { /* TODO: publish job */ }}
+        onClone={(job) => { /* TODO: clone job */ }}
+        onCloseJob={(job) => { /* TODO: close job */ }}
+        onMoveStage={(candidateId, jobId) => { /* TODO: move stage */ }}
+        onScheduleInterview={(candidateId, jobId) => { /* TODO: schedule interview */ }}
+        onRejectCandidate={(candidateId, jobId) => { /* TODO: reject candidate */ }}
+        onViewCandidateProfile={(candidateId) => { /* TODO: navigate to candidate profile */ }}
+      />
+
+      <CreateTaskModal
+        isOpen={createTaskOpen}
+        onClose={() => setCreateTaskOpen(false)}
+        onSuccess={() => setCreateTaskOpen(false)}
+        initialRelatedTo="Job"
+      />
 
       <style dangerouslySetInnerHTML={{ __html: `
         .custom-scrollbar::-webkit-scrollbar {

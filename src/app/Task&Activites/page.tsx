@@ -20,10 +20,22 @@ import {
   X,
   ChevronLeft,
   Calendar as CalendarIcon,
-  List as ListIcon
+  List as ListIcon,
+  Pencil,
+  AlertTriangle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ImageWithFallback } from '../../components/ImageWithFallback';
+import { TaskDetailsDrawer, type TaskForDrawer, type TaskActivityItem } from '../../components/TaskDetailsDrawer';
+import { TaskSLAAlertBadge, TaskSLAAlertsPanel, getDaysOverdue } from '../../components/TaskSLAAlerts';
+import { TaskAnalyticsCards, type TaskAnalyticsData, type TaskAnalyticsCardId } from '../../components/TaskAnalyticsCards';
+import {
+  MOCK_TASK_ACTIVITY_EVENTS,
+  MOCK_TASK_COMMUNICATIONS,
+  MOCK_CANDIDATE_INTERACTIONS,
+  MOCK_AI_TASK_SUGGESTIONS,
+} from './types';
+import type { TaskFormValues } from './types';
 
 // --- Types ---
 
@@ -194,7 +206,15 @@ const TaskTypeIcon = ({ type }: { type: TaskType }) => {
   return <Icon size={16} className="text-gray-400" />;
 };
 
-const FilterBar = ({ onAddTask }: { onAddTask: () => void }) => (
+const FilterBar = ({
+  onAddTask,
+  onOpenSLAAlerts,
+  slaOverdueCount = 0,
+}: {
+  onAddTask: () => void;
+  onOpenSLAAlerts?: () => void;
+  slaOverdueCount?: number;
+}) => (
   <div className="flex items-center justify-between py-4 border-b border-gray-200 gap-4 flex-wrap">
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50">
@@ -209,247 +229,46 @@ const FilterBar = ({ onAddTask }: { onAddTask: () => void }) => (
         <span>Priority</span>
       </div>
       <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50">
-        <span>Owner</span>
+        <span>Assigned to</span>
       </div>
       <button className="text-sm font-medium text-blue-600 hover:text-blue-700 ml-2">Clear Filters</button>
     </div>
-    
+
     <div className="flex items-center gap-3">
+      {onOpenSLAAlerts != null && (
+        <button
+          type="button"
+          onClick={onOpenSLAAlerts}
+          className="relative flex items-center gap-2 bg-white border border-gray-200 rounded-lg pl-3 pr-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:border-red-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors"
+          title="View all SLA alerts"
+        >
+          <AlertTriangle size={18} className="text-red-500" />
+          <span className="font-medium">SLA Alerts</span>
+          {slaOverdueCount > 0 && (
+            <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">
+              {slaOverdueCount > 99 ? '99+' : slaOverdueCount}
+            </span>
+          )}
+        </button>
+      )}
       <div className="relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input 
-          type="text" 
-          placeholder="Search Related..." 
+        <input
+          type="text"
+          placeholder="Search Related..."
           className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-48 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
         />
       </div>
-      <button 
+      <button
         onClick={onAddTask}
         className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700 shadow-sm active:scale-95 transition-all"
       >
         <Plus size={18} />
-        Add Task
+        Create Task
       </button>
     </div>
   </div>
 );
-
-const TaskDetailPanel = ({ task, isOpen, onClose }: { task: Task | null, isOpen: boolean, onClose: () => void }) => {
-  if (!task) return null;
-  const activities = MOCK_ACTIVITIES[task.id] || [];
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-          />
-          <motion.div 
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-[450px] bg-white shadow-2xl z-50 overflow-y-auto"
-          >
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
-              <h2 className="text-xl font-bold text-gray-900">Task Details</h2>
-              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400">
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-8">
-              {/* Task Header */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <TaskTypeIcon type={task.type} />
-                  <span className="text-sm font-medium text-gray-500 uppercase tracking-wider">{task.type}</span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 leading-tight">{task.title}</h3>
-                <div className="flex gap-2">
-                  <PriorityBadge priority={task.priority} />
-                  <StatusBadge status={task.status} />
-                </div>
-              </div>
-
-              {/* Info Grid */}
-              <div className="grid grid-cols-2 gap-6 bg-gray-50 p-4 rounded-xl">
-                <div>
-                  <div className="text-xs text-gray-400 uppercase font-bold mb-1">Due Date</div>
-                  <div className="text-sm font-medium text-gray-900">{task.dueDate} • {task.time}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-400 uppercase font-bold mb-1">Owner</div>
-                  <div className="flex items-center gap-2">
-                    <ImageWithFallback src={task.owner.avatar} className="w-5 h-5 rounded-full" />
-                    <span className="text-sm font-medium text-gray-900">{task.owner.name}</span>
-                  </div>
-                </div>
-                <div className="col-span-2">
-                  <div className="text-xs text-gray-400 uppercase font-bold mb-1">Related To</div>
-                  <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
-                    {task.relatedTo.type === 'Candidate' && <Users2 size={14} className="text-blue-500" />}
-                    {task.relatedTo.type === 'Job' && <Briefcase size={14} className="text-emerald-500" />}
-                    {task.relatedTo.type === 'Client' && <Contact size={14} className="text-amber-500" />}
-                    {task.relatedTo.name} ({task.relatedTo.type})
-                  </div>
-                </div>
-              </div>
-
-              {/* Timeline */}
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-lg font-bold text-gray-900">Activity History</h4>
-                  <button className="text-xs font-bold text-blue-600 hover:text-blue-700 px-3 py-1 bg-blue-50 rounded-lg">Add Note</button>
-                </div>
-                
-                <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100">
-                  {activities.length > 0 ? activities.map((activity, idx) => (
-                    <div key={idx} className="relative pl-8">
-                      <div className="absolute left-0 top-1 w-[24px] h-[24px] bg-white border-2 border-blue-500 rounded-full flex items-center justify-center z-10">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-gray-400 uppercase">{activity.type}</span>
-                          <span className="text-[10px] text-gray-400">{activity.timestamp}</span>
-                        </div>
-                        <p className="text-sm text-gray-700 leading-relaxed">{activity.note}</p>
-                        <div className="text-[11px] text-gray-500">Log by <span className="font-bold">{activity.recruiter}</span></div>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className="text-center py-8">
-                      <p className="text-sm text-gray-400">No activity history recorded for this task.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-gray-200 mt-auto sticky bottom-0 bg-white">
-              <button className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 active:scale-[0.98]">
-                Mark as Completed
-              </button>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-};
-
-const AddTaskModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
-      >
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Create New Task</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X size={24} />
-          </button>
-        </div>
-        
-        <div className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Task Title</label>
-            <input 
-              type="text" 
-              placeholder="e.g., Follow up with Hiring Manager" 
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Type</label>
-              <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none bg-white">
-                <option>Call</option>
-                <option>Email</option>
-                <option>Interview</option>
-                <option>Follow-up</option>
-                <option>Meeting</option>
-                <option>Note</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Priority</label>
-              <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none bg-white">
-                <option>High</option>
-                <option>Medium</option>
-                <option>Low</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Due Date</label>
-              <input 
-                type="date" 
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Time</label>
-              <input 
-                type="time" 
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Link to Candidate / Job / Client</label>
-            <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Search..." 
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-gray-900">Enable Reminders</span>
-              <span className="text-xs text-gray-500">In-app and Email notifications</span>
-            </div>
-            <div className="w-10 h-6 bg-blue-600 rounded-full relative cursor-pointer p-1">
-              <div className="w-4 h-4 bg-white rounded-full ml-auto shadow-sm" />
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 border-t border-gray-100 flex gap-3">
-          <button 
-            onClick={onClose}
-            className="flex-1 py-2 border border-gray-200 rounded-lg font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button 
-            onClick={onClose}
-            className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors"
-          >
-            Create Task
-          </button>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
 
 const CalendarView = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
@@ -491,13 +310,46 @@ const CalendarView = () => {
 
 export default function App() {
   const [view, setView] = useState<'list' | 'calendar'>('list');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerMode, setDrawerMode] = useState<'create' | 'detail' | 'edit'>('detail');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [createTaskPrefill, setCreateTaskPrefill] = useState<Partial<TaskFormValues> | null>(null);
+  const [slaDrawerOpen, setSlaDrawerOpen] = useState(false);
+
+  const slaOverdueCount = MOCK_TASKS.filter(
+    (t) => t.status !== 'Completed' && getDaysOverdue(t.dueDate) > 0
+  ).length;
+
+  const openCreateTask = () => {
+    setSelectedTask(null);
+    setCreateTaskPrefill(null);
+    setDrawerMode('create');
+    setDrawerOpen(true);
+  };
+
+  const handleCreateTaskFromSuggestion = (suggestion: { prefill?: Partial<TaskFormValues> }) => {
+    setSelectedTask(null);
+    setCreateTaskPrefill(suggestion.prefill ?? null);
+    setDrawerMode('create');
+    setDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    setCreateTaskPrefill(null);
+  };
 
   const handleRowClick = (task: Task) => {
     setSelectedTask(task);
-    setIsDetailOpen(true);
+    setDrawerMode('detail');
+    setDrawerOpen(true);
+  };
+
+  const handleEditTask = (task: Task, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedTask(task);
+    setDrawerMode('edit');
+    setDrawerOpen(true);
   };
 
   return (
@@ -528,6 +380,25 @@ export default function App() {
             </div>
           </div>
 
+          {/* Task Analytics Summary */}
+          <div className="mb-6">
+            <TaskAnalyticsCards
+              data={{
+                completedToday: 12,
+                overdueCount: slaOverdueCount,
+                avgCompletionTimeDays: 1.2,
+                productivityPercent: 87,
+                trendCompletedToday: '+8% vs yesterday',
+                helperOverdue: slaOverdueCount > 0 ? `${slaOverdueCount} task${slaOverdueCount === 1 ? '' : 's'} need attention` : undefined,
+                helperAvgTime: 'Based on current week performance',
+                helperProductivity: 'Based on current week',
+              }}
+              onCardClick={(cardId: TaskAnalyticsCardId) => {
+                if (cardId === 'overdue' && slaOverdueCount > 0) setSlaDrawerOpen(true);
+              }}
+            />
+          </div>
+
           {/* Summary Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <SummaryCard label="Due Today" count={12} icon={CalendarIcon} color="bg-blue-100 text-blue-600" />
@@ -537,7 +408,11 @@ export default function App() {
           </div>
 
           {/* Filters */}
-          <FilterBar onAddTask={() => setIsAddModalOpen(true)} />
+          <FilterBar
+            onAddTask={openCreateTask}
+            onOpenSLAAlerts={() => setSlaDrawerOpen(true)}
+            slaOverdueCount={slaOverdueCount}
+          />
 
           {/* Main Content */}
           {view === 'list' ? (
@@ -551,7 +426,7 @@ export default function App() {
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Due Date</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Priority</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Owner</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Assigned to</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
@@ -591,7 +466,10 @@ export default function App() {
                         <PriorityBadge priority={task.priority} />
                       </td>
                       <td className="px-6 py-4">
-                        <StatusBadge status={task.status} />
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <StatusBadge status={task.status} />
+                          <TaskSLAAlertBadge dueDate={task.dueDate} status={task.status} variant="row" />
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
@@ -603,6 +481,13 @@ export default function App() {
                         <div className="flex items-center justify-end gap-2">
                           <button className="p-1.5 hover:bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-blue-600 transition-all cursor-pointer">
                             <CheckSquare size={16} />
+                          </button>
+                          <button
+                            onClick={(e) => handleEditTask(task, e)}
+                            className="p-1.5 hover:bg-white border border-transparent hover:border-gray-200 rounded-lg text-gray-400 hover:text-blue-600 transition-all cursor-pointer"
+                            title="Edit task"
+                          >
+                            <Pencil size={16} />
                           </button>
                           <button className="p-1.5 hover:bg-white border border-transparent hover:border-gray-200 rounded-lg text-gray-400 hover:text-gray-600 transition-all cursor-pointer">
                             <MoreVertical size={16} />
@@ -630,15 +515,69 @@ export default function App() {
           )}
       </main>
 
-      <TaskDetailPanel 
-        task={selectedTask} 
-        isOpen={isDetailOpen} 
-        onClose={() => setIsDetailOpen(false)} 
-      />
+      {/* All SLA Alerts drawer (from Tasks page button) */}
+      <AnimatePresence>
+        {slaDrawerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSlaDrawerOpen(false)}
+              className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-[2px] pointer-events-auto"
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 pointer-events-auto border-l border-slate-200 flex flex-col"
+            >
+              <div className="shrink-0 border-b border-slate-200 p-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-slate-900">SLA Alerts</h2>
+                <button
+                  type="button"
+                  onClick={() => setSlaDrawerOpen(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  aria-label="Close"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                <TaskSLAAlertsPanel
+                  tasks={MOCK_TASKS}
+                  onTaskClick={(id) => {
+                    setSlaDrawerOpen(false);
+                    const t = MOCK_TASKS.find((x) => x.id === id);
+                    if (t) handleRowClick(t);
+                  }}
+                  showAITip
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-      <AddTaskModal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)} 
+      <TaskDetailsDrawer
+        isOpen={drawerOpen}
+        onClose={handleCloseDrawer}
+        mode={drawerMode}
+        task={(drawerMode === 'detail' || drawerMode === 'edit') ? (selectedTask as TaskForDrawer | null) : null}
+        activities={(selectedTask ? (MOCK_ACTIVITIES[selectedTask.id] ?? []) : []) as TaskActivityItem[]}
+        activityEvents={selectedTask ? (MOCK_TASK_ACTIVITY_EVENTS[selectedTask.id] ?? []) : []}
+        communicationEntries={selectedTask ? (MOCK_TASK_COMMUNICATIONS[selectedTask.id] ?? []) : []}
+        candidateInteractionEntries={selectedTask ? (MOCK_CANDIDATE_INTERACTIONS[selectedTask.id] ?? []) : []}
+        createTaskPrefill={createTaskPrefill}
+        aiSuggestions={MOCK_AI_TASK_SUGGESTIONS}
+        onCreateTaskFromSuggestion={handleCreateTaskFromSuggestion}
+        onCreateSuccess={() => { setCreateTaskPrefill(null); }}
+        onRequestEdit={() => setDrawerMode('edit')}
+        onExitEdit={() => setDrawerMode('detail')}
+        onMarkCompleted={(taskId) => { /* TODO: update task status */ }}
+        onDelete={(taskId) => { setDrawerOpen(false); setSelectedTask(null); /* TODO: remove task */ }}
+        onRelatedEntityClick={(entity) => { /* TODO: navigate to /candidate, /job, /client by entity.type and entity.id */ }}
       />
     </div>
   );
