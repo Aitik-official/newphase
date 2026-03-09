@@ -22,19 +22,20 @@ export interface TaskActivityLogProps {
   className?: string;
 }
 
-const ACTION_ICONS: Record<TaskActivityEventType, React.ComponentType<{ size?: number; className?: string }>> = {
-  created: PlusCircle,
-  edited: Pencil,
-  assigned: UserPlus,
-  priority_changed: Pencil,
-  due_date_changed: Calendar,
-  status_updated: Pencil,
-  reminder_changed: Clock,
-  attachment_uploaded: Paperclip,
-  note_added: MessageSquare,
-  completed: CheckCircle,
-  reopened: RotateCcw,
-  deleted: Trash2,
+type IconComponent = React.ComponentType<{ size?: number; className?: string }>;
+const ACTION_ICONS: Record<TaskActivityEventType, IconComponent> = {
+  created: PlusCircle as IconComponent,
+  edited: Pencil as IconComponent,
+  assigned: UserPlus as IconComponent,
+  priority_changed: Pencil as IconComponent,
+  due_date_changed: Calendar as IconComponent,
+  status_updated: Pencil as IconComponent,
+  reminder_changed: Clock as IconComponent,
+  attachment_uploaded: Paperclip as IconComponent,
+  note_added: MessageSquare as IconComponent,
+  completed: CheckCircle as IconComponent,
+  reopened: RotateCcw as IconComponent,
+  deleted: Trash2 as IconComponent,
 };
 
 function getDateGroupLabel(timestamp: string): string {

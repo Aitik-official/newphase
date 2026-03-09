@@ -32,28 +32,29 @@ function getProductivityMetricClass(percent: number): string {
   return 'text-red-600';
 }
 
+type IconComponent = React.ComponentType<{ size?: number; className?: string }>;
 const CARD_CONFIG: Record<
   TaskAnalyticsCardId,
-  { title: string; icon: React.ComponentType<{ size?: number; className?: string }>; iconBg: string }
+  { title: string; icon: IconComponent; iconBg: string }
 > = {
   completed_today: {
     title: 'Tasks Completed Today',
-    icon: CheckSquare,
+    icon: CheckSquare as IconComponent,
     iconBg: 'bg-emerald-100 text-emerald-600',
   },
   overdue: {
     title: 'Overdue Tasks',
-    icon: Clock,
+    icon: Clock as IconComponent,
     iconBg: 'bg-red-100 text-red-600',
   },
   avg_completion: {
     title: 'Average Completion Time',
-    icon: TrendingUp,
+    icon: TrendingUp as IconComponent,
     iconBg: 'bg-blue-100 text-blue-600',
   },
   productivity: {
     title: 'Recruiter Productivity',
-    icon: UserCheck,
+    icon: UserCheck as IconComponent,
     iconBg: 'bg-violet-100 text-violet-600',
   },
 };

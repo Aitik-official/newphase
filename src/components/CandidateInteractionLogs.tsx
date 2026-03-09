@@ -23,13 +23,13 @@ export interface CandidateInteractionLogsProps {
 }
 
 const TYPE_CONFIG: Record<CandidateInteractionType, { label: string; icon: React.ComponentType<{ size?: number; className?: string }>; iconBg: string }> = {
-  whatsapp_sent: { label: 'WhatsApp', icon: MessageCircle, iconBg: 'bg-emerald-600 text-white' },
-  email_sent: { label: 'Email', icon: Mail, iconBg: 'bg-amber-500 text-white' },
-  call_attempted: { label: 'Call', icon: Phone, iconBg: 'bg-slate-500 text-white' },
-  call_connected: { label: 'Call', icon: Phone, iconBg: 'bg-blue-600 text-white' },
-  candidate_replied: { label: 'Response', icon: UserCheck, iconBg: 'bg-violet-500 text-white' },
-  interview_reminder_sent: { label: 'Reminder', icon: Calendar, iconBg: 'bg-blue-600 text-white' },
-  candidate_reschedule_request: { label: 'Request', icon: RotateCcw, iconBg: 'bg-amber-500 text-white' },
+  whatsapp_sent: { label: 'WhatsApp', icon: MessageCircle as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-emerald-600 text-white' },
+  email_sent: { label: 'Email', icon: Mail as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-amber-500 text-white' },
+  call_attempted: { label: 'Call', icon: Phone as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-slate-500 text-white' },
+  call_connected: { label: 'Call', icon: Phone as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-blue-600 text-white' },
+  candidate_replied: { label: 'Response', icon: UserCheck as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-violet-500 text-white' },
+  interview_reminder_sent: { label: 'Reminder', icon: Calendar as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-blue-600 text-white' },
+  candidate_reschedule_request: { label: 'Request', icon: RotateCcw as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-amber-500 text-white' },
 };
 
 const CHANNEL_FILTERS: { id: CandidateInteractionChannel; label: string }[] = [

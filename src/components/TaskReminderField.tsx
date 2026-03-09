@@ -61,9 +61,9 @@ export interface TaskReminderFieldProps {
 }
 
 const CHANNEL_ICONS: Record<ReminderChannel, React.ComponentType<{ size?: number; className?: string }>> = {
-  notification: Bell,
-  email: Mail,
-  whatsapp: MessageCircle,
+  notification: Bell as React.ComponentType<{ size?: number; className?: string }>,
+  email: Mail as React.ComponentType<{ size?: number; className?: string }>,
+  whatsapp: MessageCircle as React.ComponentType<{ size?: number; className?: string }>,
 };
 
 export function TaskReminderField({

@@ -19,11 +19,11 @@ export interface TaskCommunicationHistoryProps {
 }
 
 const TYPE_CONFIG: Record<TaskCommunicationType, { label: string; icon: React.ComponentType<{ size?: number; className?: string }>; iconBg: string }> = {
-  email: { label: 'Email', icon: Mail, iconBg: 'bg-amber-500 text-white' },
-  call: { label: 'Call', icon: Phone, iconBg: 'bg-blue-600 text-white' },
-  whatsapp: { label: 'WhatsApp', icon: MessageCircle, iconBg: 'bg-emerald-600 text-white' },
-  note: { label: 'Note', icon: FileText, iconBg: 'bg-slate-600 text-white' },
-  comment: { label: 'Comment', icon: MessageSquare, iconBg: 'bg-violet-500 text-white' },
+  email: { label: 'Email', icon: Mail as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-amber-500 text-white' },
+  call: { label: 'Call', icon: Phone as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-blue-600 text-white' },
+  whatsapp: { label: 'WhatsApp', icon: MessageCircle as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-emerald-600 text-white' },
+  note: { label: 'Note', icon: FileText as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-slate-600 text-white' },
+  comment: { label: 'Comment', icon: MessageSquare as React.ComponentType<{ size?: number; className?: string }>, iconBg: 'bg-violet-500 text-white' },
 };
 
 const FILTER_OPTIONS: { id: 'all' | TaskCommunicationType; label: string }[] = [
