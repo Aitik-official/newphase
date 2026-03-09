@@ -849,7 +849,7 @@ export function LeadDetailsDrawer({
                       <label className="block text-sm font-medium text-slate-700 mb-2">Recipient</label>
                       <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700">
                         <MessageCircle size={18} className="text-emerald-600 shrink-0" />
-                        <span>{lead.phone || '—'}</span>
+                        <span>{lead?.phone || '—'}</span>
                       </div>
                       <p className="text-[11px] text-slate-400 mt-1">Auto-filled from lead contact</p>
                     </div>
