@@ -1253,7 +1253,7 @@ export function LeadDetailsDrawer({
                     <button
                       type="button"
                       onClick={() => {
-                        onConvert?.(lead.id);
+                        if (lead) onConvert?.(lead.id);
                         setShowConvertToClientForm(false);
                         setActiveTab('overview');
                       }}
@@ -1365,7 +1365,7 @@ export function LeadDetailsDrawer({
                     <button
                       type="button"
                       onClick={() => {
-                        onAssignLead?.(lead.id, assignLeadForm);
+                        if (lead) onAssignLead?.(lead.id, assignLeadForm);
                         setShowAssignLeadForm(false);
                         setActiveTab('overview');
                       }}
@@ -1446,7 +1446,7 @@ export function LeadDetailsDrawer({
                     <button
                       type="button"
                       onClick={() => {
-                        onMarkLost?.(lead.id, markLostForm);
+                        if (lead) onMarkLost?.(lead.id, markLostForm);
                         setShowMarkLostForm(false);
                         setActiveTab('overview');
                       }}
