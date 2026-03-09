@@ -542,7 +542,7 @@ export function LeadDetailsDrawer({
                     <button
                       type="button"
                       onClick={() => {
-                        onDeleteLead?.(lead.id);
+                        if (lead) onDeleteLead?.(lead.id);
                         setShowDeleteLeadForm(false);
                         onClose();
                       }}
