@@ -26,10 +26,10 @@ const PRIORITY_STYLES: Record<AITaskSuggestionPriority, string> = {
 };
 
 const CATEGORY_ICONS: Record<Exclude<AITaskSuggestionCategory, 'all'>, React.ComponentType<{ size?: number; className?: string }>> = {
-  Candidate: Users,
-  Interview: Calendar,
-  Client: Briefcase,
-  Offer: FileCheck,
+  Candidate: Users as React.ComponentType<{ size?: number; className?: string }>,
+  Interview: Calendar as React.ComponentType<{ size?: number; className?: string }>,
+  Client: Briefcase as React.ComponentType<{ size?: number; className?: string }>,
+  Offer: FileCheck as React.ComponentType<{ size?: number; className?: string }>,
 };
 
 function SuggestionCard({
