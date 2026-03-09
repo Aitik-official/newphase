@@ -82,8 +82,9 @@ export function TaskAssignmentField({
     }
   };
 
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleClear = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
     const previousId = value || undefined;
     onChange('');
     if (previousId && onAssignmentChange) {
@@ -151,7 +152,7 @@ export function TaskAssignmentField({
             <span
               role="button"
               tabIndex={0}
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleClear(); }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleClear(e); }}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClear(); } }}
               className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
               aria-label="Clear assignee"
