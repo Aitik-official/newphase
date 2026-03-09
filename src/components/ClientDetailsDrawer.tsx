@@ -250,7 +250,7 @@ export function ClientDetailsDrawer({
 
   const openChangeStageForm = () => {
     setMoreMenuOpen(false);
-    setChangeStageForm({ stage: client.stage, reason: '' });
+    setChangeStageForm({ stage: client?.stage ?? 'Active', reason: '' });
     setChangeStageDropdownOpen(false);
     setChangeStageReasonDropdownOpen(false);
     setShowChangeStageForm(true);
