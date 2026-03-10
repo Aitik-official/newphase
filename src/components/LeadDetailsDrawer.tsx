@@ -32,7 +32,7 @@ import {
   Pin,
   Pencil,
 } from 'lucide-react';
-import type { Lead, LeadStatus, LeadSource, LeadType, LeadNote, LeadNoteTag, Activity } from '@/app/leads/types';
+import type { Lead, LeadStatus, LeadSource, LeadType, LeadNote, LeadNoteTag, Activity as LeadActivity } from '@/app/leads/types';
 import { ImageWithFallback } from './ImageWithFallback';
 
 const CALL_OUTCOMES = ['Interested', 'Follow-up Required', 'No Answer', 'Wrong Number', 'Not Interested'];
@@ -1990,7 +1990,7 @@ export function LeadDetailsDrawer({
                     </div>
                     <div className="p-5 space-y-5 overflow-y-auto max-h-[50vh] min-h-0 custom-scrollbar">
                       {(() => {
-                        const matchesFilter = (a: Activity) => {
+                        const matchesFilter = (a: LeadActivity) => {
                           if (activityFilter === 'all') return true;
                           if (activityFilter === 'calls') return a.type === 'Call';
                           if (activityFilter === 'emails') return a.type === 'Email';
