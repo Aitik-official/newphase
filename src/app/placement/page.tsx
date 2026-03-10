@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { PlacementSummaryCards } from '../../components/PlacementSummaryCards';
 import { PlacementFiltersBar } from '../../components/PlacementFiltersBar';
 import { PlacementsTable } from '../../components/PlacementsTable';
-import { PlacementDetailsDrawer } from '../../components/PlacementDetailsDrawer';
+import { PlacementDetailsDrawer } from '../../components/drawers/PlacementDetailsDrawer';
 
 
 export default function PlacementsPage() {

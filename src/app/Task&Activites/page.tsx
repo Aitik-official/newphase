@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ImageWithFallback } from '../../components/ImageWithFallback';
-import { TaskDetailsDrawer, type TaskForDrawer, type TaskActivityItem } from '../../components/TaskDetailsDrawer';
+import { TaskDetailsDrawer, type TaskForDrawer, type TaskActivityItem } from '../../components/drawers/TaskDetailsDrawer';
 import { TaskSLAAlertBadge, TaskSLAAlertsPanel, getDaysOverdue } from '../../components/TaskSLAAlerts';
 import { TaskAnalyticsCards, type TaskAnalyticsData, type TaskAnalyticsCardId } from '../../components/TaskAnalyticsCards';
 import {

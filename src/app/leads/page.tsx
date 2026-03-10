@@ -20,7 +20,7 @@ import {
   Target,
 } from 'lucide-react';
 import { ImageWithFallback } from '../../components/ImageWithFallback';
-import { LeadDetailsDrawer } from '../../components/LeadDetailsDrawer';
+import { LeadDetailsDrawer } from '../../components/drawers/LeadDetailsDrawer';
 import type { Lead, LeadStatus, Priority } from './types';
 
 // --- Mock Data ---

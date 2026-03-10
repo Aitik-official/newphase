@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   Clock
 } from 'lucide-react';
-import { TeamMember, Badge, IconButton } from './TeamComponents';
+import { TeamMember, Badge, IconButton } from '../TeamComponents';
 import { 
   BarChart, 
   Bar, 
@@ -24,7 +24,7 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-import { ImageWithFallback } from './ImageWithFallback';
+import { ImageWithFallback } from '../ImageWithFallback';
 
 interface MemberDrawerProps {
   member: TeamMember | null;

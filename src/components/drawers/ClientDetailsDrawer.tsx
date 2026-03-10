@@ -53,7 +53,7 @@ import {
   Receipt,
 } from 'lucide-react';
 import type { Client, ClientStage, ClientHealthStatus, ClientContact, ClientJob, JobStatus, ClientPipelineCandidate, PipelineStageName, ClientPlacement, PlacementStatus, ClientInvoice, InvoiceStatus, ClientActivityItem, ActivityFilterType, ClientNote, NoteTag, ClientFile, ClientFileType } from '@/app/client/types';
-import { ImageWithFallback } from './ImageWithFallback';
+import { ImageWithFallback } from '../ImageWithFallback';
 
 const HEALTH_STYLES: Record<ClientHealthStatus, { bg: string; text: string; label: string }> = {
   Good: { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Good' },

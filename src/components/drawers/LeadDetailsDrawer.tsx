@@ -33,7 +33,7 @@ import {
   Pencil,
 } from 'lucide-react';
 import type { Lead, LeadStatus, LeadSource, LeadType, LeadNote, LeadNoteTag, Activity as LeadActivity } from '@/app/leads/types';
-import { ImageWithFallback } from './ImageWithFallback';
+import { ImageWithFallback } from '../ImageWithFallback';
 
 const CALL_OUTCOMES = ['Interested', 'Follow-up Required', 'No Answer', 'Wrong Number', 'Not Interested'];
 

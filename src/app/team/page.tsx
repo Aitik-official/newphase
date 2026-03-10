@@ -17,11 +17,11 @@ import {
 import { motion } from 'motion/react';
 import { StatCard, TeamMember } from '../../components/TeamComponents';
 import { TeamTable } from '../../components/TeamTable';
-import { MemberDrawer } from '../../components/MemberDrawer';
+import { MemberDrawer } from '../../components/drawers/MemberDrawer';
 import { RolesPermissionsView } from '../../components/RolesPermissions';
 import { TargetsKPIView } from '../../components/TargetsKPI';
 import { CommissionView } from '../../components/CommissionManagement';
-import { AddMemberDrawer } from '../../components/AddMemberDrawer';
+import { AddMemberDrawer } from '../../components/drawers/AddMemberDrawer';
 
 type MainTab = 'members' | 'roles' | 'targets' | 'commissions';
 

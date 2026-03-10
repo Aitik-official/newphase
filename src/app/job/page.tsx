@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreateTaskModal } from '../../components/CreateTaskModal';
-import { JobDetailsDrawer, type JobForDrawer, type JobCandidateItem } from '../../components/JobDetailsDrawer';
+import { JobDetailsDrawer, type JobForDrawer, type JobCandidateItem } from '../../components/drawers/JobDetailsDrawer';
 
 // Types
 type JobStatus = 'Active' | 'On Hold' | 'Closed';

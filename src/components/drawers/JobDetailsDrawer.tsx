@@ -38,7 +38,14 @@ import {
   BarChart2,
   Timer,
   TrendingUp,
+  UserCog,
+  Pin,
+  Upload,
+  Download,
+  User,
+  FileCheck,
 } from 'lucide-react';
+import { ImageWithFallback } from '../ImageWithFallback';
 
 export type JobDrawerStatus = 'Draft' | 'Active' | 'On Hold' | 'Closed';
 
@@ -121,12 +128,72 @@ const TAB_CONFIG = [
   { id: 'candidates' as const, label: 'Candidates', icon: Users },
   { id: 'pipeline' as const, label: 'Pipeline', icon: GitBranch },
   { id: 'analytics' as const, label: 'Analytics', icon: BarChart2 },
+  { id: 'assignment' as const, label: 'Assignment', icon: UserCog },
   { id: 'interviews' as const, label: 'Interviews', icon: Calendar },
   { id: 'placements' as const, label: 'Placements', icon: UserCheck },
   { id: 'activity' as const, label: 'Activity', icon: Activity },
   { id: 'notes' as const, label: 'Notes', icon: StickyNote },
   { id: 'files' as const, label: 'Files', icon: Paperclip },
 ];
+/** Analytics is only opened via header button, not shown in tab bar */
+const TABS_VISIBLE_IN_BAR = TAB_CONFIG.filter((t) => t.id !== 'analytics');
+
+/** Job note (same shape as client notes, job-related tags) */
+export type JobNoteTag = 'JD' | 'Requirements' | 'Feedback' | 'Hiring' | 'Other';
+export interface JobNote {
+  id: string;
+  title: string;
+  content?: string;
+  tags: JobNoteTag[];
+  createdBy: { name: string; avatar?: string };
+  createdAt: string;
+  isPinned?: boolean;
+}
+
+/** Job file (documents attached to job) */
+export type JobFileType = 'JD' | 'Contract' | 'Offer Letter' | 'Policy' | 'Resume' | 'Other';
+export interface JobFile {
+  id: string;
+  fileName: string;
+  fileType: JobFileType;
+  uploadedBy: { name: string; avatar?: string };
+  uploadDate: string;
+}
+
+const JOB_NOTE_TAG_STYLES: Record<JobNoteTag, string> = {
+  JD: 'bg-blue-100 text-blue-700 border-blue-200',
+  Requirements: 'bg-violet-100 text-violet-700 border-violet-200',
+  Feedback: 'bg-amber-100 text-amber-700 border-amber-200',
+  Hiring: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  Other: 'bg-slate-100 text-slate-600 border-slate-200',
+};
+
+const JOB_FILE_TYPE_BADGE_STYLES: Record<JobFileType, string> = {
+  JD: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+  Contract: 'bg-blue-100 text-blue-700 border-blue-200',
+  'Offer Letter': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  Policy: 'bg-amber-100 text-amber-700 border-amber-200',
+  Resume: 'bg-slate-100 text-slate-700 border-slate-200',
+  Other: 'bg-slate-100 text-slate-600 border-slate-200',
+};
+
+/** Mock notes per job id */
+const MOCK_JOB_NOTES: Record<string, JobNote[]> = {
+  default: [
+    { id: 'jn1', title: 'JD review with hiring manager', content: 'Clarified must-have vs nice-to-have skills. Remote OK.', tags: ['JD', 'Requirements'], createdBy: { name: 'Alex Thompson', avatar: 'https://images.unsplash.com/photo-1701463387028-3947648f1337?q=80&w=150' }, createdAt: 'Mar 5, 2026, 10:30 AM', isPinned: true },
+    { id: 'jn2', title: 'Feedback on shortlisted candidates', content: 'Tech lead liked 2 of 5. Requested one more round.', tags: ['Feedback'], createdBy: { name: 'Sarah Chen' }, createdAt: 'Mar 4, 2026, 2:00 PM', isPinned: false },
+    { id: 'jn3', title: 'Offer approval', content: 'Comp approved. Start date aligned to Apr 1.', tags: ['Hiring'], createdBy: { name: 'Alex Thompson', avatar: 'https://images.unsplash.com/photo-1701463387028-3947648f1337?q=80&w=150' }, createdAt: 'Mar 3, 2026, 5:00 PM', isPinned: true },
+  ],
+};
+
+/** Mock files per job id */
+const MOCK_JOB_FILES: Record<string, JobFile[]> = {
+  default: [
+    { id: 'jf1', fileName: 'Senior_Engineer_JD.pdf', fileType: 'JD', uploadedBy: { name: 'Alex Thompson', avatar: 'https://images.unsplash.com/photo-1701463387028-3947648f1337?q=80&w=150' }, uploadDate: 'Mar 1, 2026' },
+    { id: 'jf2', fileName: 'Offer_Letter_Template.pdf', fileType: 'Offer Letter', uploadedBy: { name: 'Sarah Chen' }, uploadDate: 'Feb 28, 2026' },
+    { id: 'jf3', fileName: 'Candidate_Resume_John.pdf', fileType: 'Resume', uploadedBy: { name: 'Alex Thompson', avatar: 'https://images.unsplash.com/photo-1701463387028-3947648f1337?q=80&w=150' }, uploadDate: 'Mar 2, 2026' },
+  ],
+};
 
 const STATUS_STYLES: Record<JobDrawerStatus, string> = {
   Draft: 'bg-slate-100 text-slate-700 border-slate-200',
@@ -160,6 +227,9 @@ export function JobDetailsDrawer({
 
   const [activeTab, setActiveTab] = useState<(typeof TAB_CONFIG)[number]['id']>('overview');
   const [candidateMenuOpen, setCandidateMenuOpen] = useState<string | null>(null);
+  const [notesTagFilter, setNotesTagFilter] = useState<JobNoteTag | 'All'>('All');
+  const [pinnedNoteIds, setPinnedNoteIds] = useState<Set<string>>(new Set());
+  const [filesTypeFilter, setFilesTypeFilter] = useState<JobFileType | 'All'>('All');
   const [overviewOpen, setOverviewOpen] = useState<Record<string, boolean>>({
     overview: true,
     keyResponsibilities: true,
@@ -317,9 +387,9 @@ export function JobDetailsDrawer({
         {job ? (
           <>
             {/* Tabs */}
-            <div className="shrink-0 bg-slate-50/80 border-b border-slate-200 px-4 pt-1">
-              <div className="flex gap-1 min-w-max overflow-x-auto no-scrollbar">
-                {TAB_CONFIG.map((tab) => {
+            <div className="shrink-0 bg-slate-50/80 border-b border-slate-200 px-4 pt-1 overflow-x-auto custom-scrollbar">
+              <div className="flex gap-1 min-w-max pb-1 pr-1">
+                {TABS_VISIBLE_IN_BAR.map((tab) => {
                   const isActive = activeTab === tab.id;
                   const Icon = tab.icon;
                   return (
@@ -763,36 +833,308 @@ export function JobDetailsDrawer({
                   </div>
                 </div>
               )}
+              {activeTab === 'assignment' && (
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-slate-100">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Job assignment</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Assign recruiters responsible for this job. Define ownership and accountability.</p>
+                    </div>
+                    <div className="p-5 space-y-4">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Lead recruiter</label>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900">
+                          {job.recruiter ?? job.owner ?? '—'}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Supporting recruiters</label>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-700">
+                          Sarah Chen, Michael Ross
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">Additional recruiters helping with this job</p>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Hiring manager</label>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900">
+                          {job.hiringManager ?? '—'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               {activeTab === 'interviews' && (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
-                  <Calendar size={32} className="mx-auto text-slate-300 mb-3" />
-                  <p className="text-sm text-slate-500">Interviews for this job.</p>
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-slate-100">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Interviews</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Scheduled and completed interviews for this job</p>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {[
+                        { id: '1', candidateName: 'Priya Sharma', date: '2026-03-12', time: '10:00 AM', type: 'Technical', stage: 'Screening', status: 'Scheduled' },
+                        { id: '2', candidateName: 'Rahul Verma', date: '2026-03-11', time: '2:00 PM', type: 'HR', stage: 'HR Interview', status: 'Completed' },
+                        { id: '3', candidateName: 'Anita Desai', date: '2026-03-15', time: '11:00 AM', type: 'Technical', stage: 'Technical Interview', status: 'Scheduled' },
+                      ].map((i) => (
+                        <div key={i.id} className="px-4 py-3 flex flex-wrap items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                            <Calendar size={16} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-slate-900">{i.candidateName}</p>
+                            <p className="text-[11px] text-slate-500">{i.date} · {i.time} · {i.type}</p>
+                          </div>
+                          <span className="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded">{i.stage}</span>
+                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${i.status === 'Scheduled' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{i.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
               {activeTab === 'placements' && (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
-                  <UserCheck size={32} className="mx-auto text-slate-300 mb-3" />
-                  <p className="text-sm text-slate-500">Placements view.</p>
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-slate-100">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Placements</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Successful hires for this job</p>
+                    </div>
+                    {job.joined === 0 ? (
+                      <div className="p-8 text-center">
+                        <UserCheck size={32} className="mx-auto text-slate-300 mb-3" />
+                        <p className="text-sm text-slate-500">No placements yet for this job.</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-slate-100">
+                        {[
+                          { id: '1', candidateName: 'Rahul Verma', joinedDate: '2026-02-20', role: job.title },
+                          { id: '2', candidateName: 'Neha Patel', joinedDate: '2026-02-28', role: job.title },
+                        ].slice(0, Math.max(1, job.joined)).map((p) => (
+                          <div key={p.id} className="px-4 py-3 flex flex-wrap items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                              <UserCheck size={16} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-slate-900">{p.candidateName}</p>
+                              <p className="text-[11px] text-slate-500">{p.joinedDate} · {p.role}</p>
+                            </div>
+                            <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">Joined</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
               {activeTab === 'activity' && (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
-                  <Activity size={32} className="mx-auto text-slate-300 mb-3" />
-                  <p className="text-sm text-slate-500">Activity log for this job.</p>
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-slate-100">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Activity</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Recent activity for this job</p>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {[
+                        { id: '1', date: '2026-03-10', action: 'Job published', user: job.owner },
+                        { id: '2', date: '2026-03-09', action: 'Pipeline updated', user: job.recruiter ?? job.owner },
+                        { id: '3', date: '2026-03-08', action: '3 new applications', user: 'System' },
+                        { id: '4', date: '2026-03-05', action: 'Job created', user: job.owner },
+                      ].map((a) => (
+                        <div key={a.id} className="px-4 py-3 flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                            <Activity size={16} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-slate-900">{a.action}</p>
+                            <p className="text-[11px] text-slate-500">{a.date} · {a.user}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
-              {activeTab === 'notes' && (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
-                  <StickyNote size={32} className="mx-auto text-slate-300 mb-3" />
-                  <p className="text-sm text-slate-500">No notes yet.</p>
-                </div>
-              )}
-              {activeTab === 'files' && (
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
-                  <Paperclip size={32} className="mx-auto text-slate-300 mb-3" />
-                  <p className="text-sm text-slate-500">No files attached.</p>
-                </div>
-              )}
+              {activeTab === 'notes' && (() => {
+                const JOB_NOTE_TAG_OPTIONS: (JobNoteTag | 'All')[] = ['All', 'JD', 'Requirements', 'Feedback', 'Hiring', 'Other'];
+                const allNotes = (job ? (MOCK_JOB_NOTES[job.id] ?? MOCK_JOB_NOTES.default) : []) as JobNote[];
+                const filteredNotes = notesTagFilter === 'All' ? allNotes : allNotes.filter((n) => n.tags.includes(notesTagFilter));
+                const isPinned = (n: JobNote) => n.isPinned || pinnedNoteIds.has(n.id);
+                const sortedNotes = [...filteredNotes].sort((a, b) => (isPinned(b) ? 1 : 0) - (isPinned(a) ? 1 : 0));
+                const togglePin = (id: string) => setPinnedNoteIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
+                return (
+                  <div className="space-y-4">
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <button type="button" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                          <StickyNote size={16} /> Add Note
+                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {JOB_NOTE_TAG_OPTIONS.map((tag) => (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => setNotesTagFilter(tag)}
+                              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${notesTagFilter === tag ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                      <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Notes</h4>
+                        <p className="text-xs text-slate-500">{sortedNotes.length} notes</p>
+                      </div>
+                      <div className="p-4 max-h-[420px] overflow-y-auto custom-scrollbar space-y-3">
+                        {sortedNotes.length === 0 ? (
+                          <p className="py-8 text-center text-sm text-slate-500">No notes for this filter.</p>
+                        ) : (
+                          sortedNotes.map((note) => (
+                            <div
+                              key={note.id}
+                              className={`rounded-xl border p-3 transition-colors ${isPinned(note) ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200 bg-slate-50/80 hover:border-slate-300'}`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-semibold text-slate-900 flex-1 min-w-0">{note.title}</p>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button type="button" onClick={() => togglePin(note.id)} className={`p-1.5 rounded-lg transition-colors ${isPinned(note) ? 'text-amber-600 bg-amber-100 hover:bg-amber-200' : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'}`} title={isPinned(note) ? 'Unpin' : 'Pin note'}>
+                                    <Pin size={14} className={isPinned(note) ? 'fill-current' : ''} />
+                                  </button>
+                                  <button type="button" className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><Pencil size={14} /></button>
+                                  <button type="button" className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 size={14} /></button>
+                                </div>
+                              </div>
+                              {note.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                  {note.tags.map((t) => (
+                                    <span key={t} className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium border ${JOB_NOTE_TAG_STYLES[t]}`}>{t}</span>
+                                  ))}
+                                </div>
+                              )}
+                              {note.content && <p className="text-xs text-slate-600 mt-2 line-clamp-2">{note.content}</p>}
+                              <div className="flex items-center gap-2 mt-2">
+                                {note.createdBy.avatar ? (
+                                  <ImageWithFallback src={note.createdBy.avatar} alt={note.createdBy.name} className="w-5 h-5 rounded-full border border-slate-200 shrink-0" />
+                                ) : (
+                                  <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center shrink-0"><User size={10} className="text-slate-500" /></div>
+                                )}
+                                <span className="text-[11px] font-medium text-slate-600">{note.createdBy.name}</span>
+                                <span className="text-[11px] text-slate-400">·</span>
+                                <span className="text-[11px] text-slate-500">{note.createdAt}</span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              {activeTab === 'files' && (() => {
+                const JOB_FILE_TYPE_OPTIONS: (JobFileType | 'All')[] = ['All', 'JD', 'Contract', 'Offer Letter', 'Policy', 'Resume', 'Other'];
+                const allFiles = (job ? (MOCK_JOB_FILES[job.id] ?? MOCK_JOB_FILES.default) : []) as JobFile[];
+                const filteredFiles = filesTypeFilter === 'All' ? allFiles : allFiles.filter((f) => f.fileType === filesTypeFilter);
+                const FileTypeIcon = ({ type }: { type: JobFileType }) => {
+                  switch (type) {
+                    case 'JD': return <Briefcase size={14} className="text-indigo-600 shrink-0" />;
+                    case 'Contract': return <FileText size={14} className="text-blue-600 shrink-0" />;
+                    case 'Offer Letter': return <FileCheck size={14} className="text-emerald-600 shrink-0" />;
+                    case 'Policy': return <FileText size={14} className="text-amber-600 shrink-0" />;
+                    case 'Resume': return <FileText size={14} className="text-slate-600 shrink-0" />;
+                    case 'Other': return <Paperclip size={14} className="text-slate-500 shrink-0" />;
+                    default: return <Paperclip size={14} className="text-slate-500 shrink-0" />;
+                  }
+                };
+                return (
+                  <div className="space-y-4">
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <button type="button" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                          <Upload size={16} /> Upload File
+                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {JOB_FILE_TYPE_OPTIONS.map((type) => (
+                            <button
+                              key={type}
+                              type="button"
+                              onClick={() => setFilesTypeFilter(type)}
+                              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors shrink-0 ${filesTypeFilter === type ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                            >
+                              {type}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                      <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Files</h4>
+                        <p className="text-xs text-slate-500">{filteredFiles.length} files</p>
+                      </div>
+                      <div className="overflow-x-auto custom-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[640px]">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                              <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">File name</th>
+                              <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Type</th>
+                              <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Uploaded by</th>
+                              <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Upload date</th>
+                              <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right w-32">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {filteredFiles.length === 0 ? (
+                              <tr>
+                                <td colSpan={5} className="px-4 py-12 text-center text-sm text-slate-500">No files for this type.</td>
+                              </tr>
+                            ) : (
+                              filteredFiles.map((file) => (
+                                <tr key={file.id} className="hover:bg-slate-50/80 transition-colors">
+                                  <td className="px-4 py-3">
+                                    <p className="text-sm font-medium text-slate-900 truncate max-w-[200px]">{file.fileName}</p>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${JOB_FILE_TYPE_BADGE_STYLES[file.fileType]}`}>
+                                      <FileTypeIcon type={file.fileType} />
+                                      {file.fileType}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      {file.uploadedBy.avatar ? (
+                                        <ImageWithFallback src={file.uploadedBy.avatar} alt={file.uploadedBy.name} className="w-6 h-6 rounded-full border border-slate-200 shrink-0" />
+                                      ) : (
+                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0"><User size={12} className="text-slate-500" /></div>
+                                      )}
+                                      <span className="text-sm text-slate-600 truncate">{file.uploadedBy.name}</span>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-slate-600">{file.uploadDate}</td>
+                                  <td className="px-4 py-3">
+                                    <div className="flex items-center justify-end gap-1">
+                                      <button type="button" className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Download"><Download size={14} /></button>
+                                      <button type="button" className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Preview"><Eye size={14} /></button>
+                                      <button type="button" className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 size={14} /></button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Footer */}

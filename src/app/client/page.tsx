@@ -17,10 +17,10 @@ import {
 } from 'lucide-react';
 import { ClientSummaryMetrics } from '../../components/ClientSummaryMetrics';
 import { ClientTable } from '../../components/ClientTable';
-import { ClientFilterDrawer } from '../../components/ClientFilterDrawer';
+import { ClientFilterDrawer } from '../../components/drawers/ClientFilterDrawer';
 import { ClientBulkActionsBar } from '../../components/ClientBulkActionsBar';
-import { ClientDetailsDrawer } from '../../components/ClientDetailsDrawer';
-import { ClientImportDrawer } from '../../components/ClientImportDrawer';
+import { ClientDetailsDrawer } from '../../components/drawers/ClientDetailsDrawer';
+import { ClientImportDrawer } from '../../components/drawers/ClientImportDrawer';
 import { CreateTaskModal } from '../../components/CreateTaskModal';
 import { INITIAL_CLIENTS } from './types';
 import type { Client } from './types';

@@ -5,7 +5,7 @@ import { ContactHeader } from '../../components/ContactHeader';
 import { ContactFilterBar } from '../../components/ContactFilterBar';
 import { ContactsTable } from '../../components/ContactsTable';
 import { ContactDetailPanel } from '../../components/ContactDetailPanel';
-import { AddContactDrawer } from '../../components/AddContactDrawer';
+import { AddContactDrawer } from '../../components/drawers/AddContactDrawer';
 import { Contact } from '../../components/ContactMockData';
 import { Toaster } from 'sonner';
 

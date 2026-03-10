@@ -24,13 +24,13 @@ import {
   AlertTriangle,
   Sparkles,
 } from 'lucide-react';
-import { TaskSLAAlertBadge, TaskSLAAlertsPanel, getDaysOverdue } from './TaskSLAAlerts';
-import { ImageWithFallback } from './ImageWithFallback';
-import { TaskForm } from './TaskForm';
-import { TaskActivityLog } from './TaskActivityLog';
-import { TaskCommunicationHistory } from './TaskCommunicationHistory';
-import { CandidateInteractionLogs } from './CandidateInteractionLogs';
-import { AITaskSuggestionsPanel } from './AITaskSuggestionsPanel';
+import { TaskSLAAlertBadge, TaskSLAAlertsPanel, getDaysOverdue } from '../TaskSLAAlerts';
+import { ImageWithFallback } from '../ImageWithFallback';
+import { TaskForm } from '../TaskForm';
+import { TaskActivityLog } from '../TaskActivityLog';
+import { TaskCommunicationHistory } from '../TaskCommunicationHistory';
+import { CandidateInteractionLogs } from '../CandidateInteractionLogs';
+import { AITaskSuggestionsPanel } from '../AITaskSuggestionsPanel';
 import {
   type TaskRelatedTo,
   type TaskPriority,
@@ -42,7 +42,7 @@ import {
   MOCK_JOBS,
   MOCK_CLIENTS,
   MOCK_INTERVIEWS,
-} from '../app/Task&Activites/types';
+} from '../../app/Task&Activites/types';
 
 export type TaskType = 'Call' | 'Email' | 'Interview' | 'Follow-up' | 'Meeting' | 'Note';
 export type TaskStatus = 'Pending' | 'Completed' | 'Overdue';

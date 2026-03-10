@@ -7,7 +7,7 @@ import { InterviewCalendarView } from '../../components/InterviewCalendarView';
 import { InterviewHorizontalFilterBar } from '../../components/InterviewHorizontalFilterBar';
 import { ScheduleInterviewModal } from '../../components/interviewscheduleinterviewmodal';
 import { InterviewFeedbackModal } from '../../components/InterviewFeedbackModal';
-import { RescheduleDrawer } from '../../components/interviewRescheduleDrawer';
+import { RescheduleDrawer } from '../../components/drawers/interviewRescheduleDrawer';
 import { Plus, Calendar, List, Filter, RefreshCw, Search, Bell, Settings, User, CheckSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreateTaskModal } from '../../components/CreateTaskModal';

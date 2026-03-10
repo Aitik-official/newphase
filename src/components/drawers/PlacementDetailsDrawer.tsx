@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, FileText, MapPin, DollarSign, Calendar, Briefcase, User, Download, ExternalLink } from 'lucide-react';
-import { ImageWithFallback } from './ImageWithFallback';
+import { ImageWithFallback } from '../ImageWithFallback';
 
 interface PlacementDetailsProps {
   placement: any | null;
