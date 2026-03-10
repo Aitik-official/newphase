@@ -2007,7 +2007,7 @@ export function LeadDetailsDrawer({
                                 <div className="absolute left-6 top-0 bottom-0 w-px bg-slate-200 z-0" />
                                 <div className="flex flex-col gap-5 flex-1 min-w-0">
                                   {filtered.map((activity) => {
-                                    const user = activity.user ?? lead?.assignedTo;
+                                    const user = activity.user ?? lead?.assignedTo ?? { name: 'Unknown', avatar: '' };
                                     const title = activity.title ?? activity.type;
                                     const isCall = activity.type === 'Call';
                                     const isEmail = activity.type === 'Email';
