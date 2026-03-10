@@ -86,11 +86,11 @@ export interface TaskDetailsDrawerProps {
   /** Legacy note-style activities (optional) */
   activities?: TaskActivityItem[];
   /** Audit-style activity log events for Activity tab */
-  activityEvents?: import('../app/Task&Activites/types').TaskActivityEvent[];
+  activityEvents?: import('../../app/Task&Activites/types').TaskActivityEvent[];
   /** Communication history for Communication tab */
-  communicationEntries?: import('../app/Task&Activites/types').TaskCommunicationEntry[];
+  communicationEntries?: import('../../app/Task&Activites/types').TaskCommunicationEntry[];
   /** Candidate interaction logs for Communication tab (when task is related to Candidate) */
-  candidateInteractionEntries?: import('../app/Task&Activites/types').CandidateInteractionEntry[];
+  candidateInteractionEntries?: import('../../app/Task&Activites/types').CandidateInteractionEntry[];
   /** When opening in create mode, optional prefill for the form (e.g. from AI suggestion) */
   createTaskPrefill?: Partial<TaskFormValues> | null;
   /** AI task suggestions shown in the Suggestions tab (detail mode) */
