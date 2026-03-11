@@ -106,6 +106,49 @@ const MOCK_JOB_CANDIDATES: Record<string, JobCandidateItem[]> = {
   ],
 };
 
+/** Version options shown in the job details drawer dropdown (per job id). */
+const JOB_VERSION_OPTIONS: Record<string, { id: string; label: string }[]> = {
+  'JOB-2024-001': [
+    { id: 'current', label: 'Current' },
+    { id: 'v1', label: 'Version 1' },
+    { id: 'v2', label: 'Version 2' },
+  ],
+  'JOB-2024-002': [
+    { id: 'current', label: 'Current' },
+    { id: 'v1', label: 'Version 1' },
+  ],
+  'JOB-2024-003': [
+    { id: 'current', label: 'Current' },
+    { id: 'v1', label: 'Version 1' },
+    { id: 'v2', label: 'Version 2' },
+  ],
+};
+
+/** Overrides per version for drawer job content (overview, title, etc.). Merged with base toJobForDrawer(job). */
+const JOB_VERSION_OVERLAYS: Record<string, Record<string, Partial<JobForDrawer>>> = {
+  'JOB-2024-001': {
+    v1: {
+      overview: 'Earlier version: We need a Senior Frontend Engineer to lead client-side development. Focus on React and performance.',
+      keyResponsibilities: ['Build React applications', 'Lead frontend standards', 'Mentor team'],
+      requiredSkills: ['React', 'JavaScript', 'CSS'],
+      preferredSkills: ['TypeScript', 'Next.js'],
+    },
+    v2: {
+      overview: 'Revised JD: We are looking for a Senior Frontend Engineer to own the client-side experience of our product suite. You will work with design and backend teams to build performant, accessible UIs.',
+      keyResponsibilities: ['Build and maintain React-based applications', 'Collaborate with UX on design system', 'Mentor junior developers', 'Own frontend performance and accessibility'],
+      requiredSkills: ['React', 'TypeScript', 'CSS', 'REST APIs'],
+      preferredSkills: ['Next.js', 'GraphQL', 'Testing (Jest, RTL)'],
+    },
+  },
+  'JOB-2024-002': {
+    v1: { overview: 'Initial draft: Product Designer for consumer and enterprise products.', keyResponsibilities: ['Create flows and prototypes', 'User research'], requiredSkills: ['Figma', 'Prototyping'], preferredSkills: [], experienceRequired: '3+ years', education: '', benefits: [] },
+  },
+  'JOB-2024-003': {
+    v1: { overview: 'Version 1: Data Engineer role for analytics pipeline.', requiredSkills: ['SQL', 'Python', 'ETL'], preferredSkills: ['Spark', 'Airflow'], experienceRequired: '4+ years', education: '', benefits: [] },
+    v2: { overview: 'Updated: Senior Data Engineer to build and maintain our analytics and ML pipelines. You will work with product and science teams.', keyResponsibilities: ['Design and build ETL pipelines', 'Optimize data models', 'Support ML feature pipelines'], requiredSkills: ['SQL', 'Python', 'Spark', 'ETL'], preferredSkills: ['Airflow', 'dbt', 'Snowflake'], experienceRequired: '5+ years', education: 'BS in CS or related', benefits: ['Health', 'Remote', 'Learning budget'] },
+  },
+};
+
 interface JobStatusPillProps {
   status: JobStatus;
 }
@@ -477,17 +520,30 @@ const JobsBoardView = ({ jobs, onJobClick }: JobsBoardViewProps) => {
   );
 };
 
+/** Returns job for drawer for the given version (current = base job; other versions merge overlay). */
+function getJobForVersion(job: Job, versionId: string): JobForDrawer {
+  const base = toJobForDrawer(job);
+  if (versionId === 'current') return base;
+  const overlay = JOB_VERSION_OVERLAYS[job.id]?.[versionId];
+  return overlay ? { ...base, ...overlay } : base;
+}
+
 export default function JobsPage() {
   const [view, setView] = useState<'list' | 'board'>('list');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [jobDrawerOpen, setJobDrawerOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [selectedVersionId, setSelectedVersionId] = useState<string>('current');
 
   const openJobDrawer = (job: Job) => {
     setSelectedJob(job);
+    setSelectedVersionId('current');
     setJobDrawerOpen(true);
   };
+
+  const jobVersions = selectedJob ? (JOB_VERSION_OPTIONS[selectedJob.id] ?? []) : [];
+  const jobToShow = selectedJob ? getJobForVersion(selectedJob, selectedVersionId) : null;
 
   return (
     <div className="w-full min-h-screen bg-gray-50 font-sans text-gray-900">
@@ -676,8 +732,11 @@ export default function JobsPage() {
 
       <JobDetailsDrawer
         isOpen={jobDrawerOpen}
-        onClose={() => { setJobDrawerOpen(false); setSelectedJob(null); }}
-        job={selectedJob ? toJobForDrawer(selectedJob) : null}
+        onClose={() => { setJobDrawerOpen(false); setSelectedJob(null); setSelectedVersionId('current'); }}
+        job={jobToShow}
+        jobVersions={jobVersions}
+        selectedVersionId={selectedVersionId}
+        onVersionChange={(versionId) => setSelectedVersionId(versionId)}
         jobCandidates={selectedJob ? (MOCK_JOB_CANDIDATES[selectedJob.id] ?? []) : []}
         onEdit={(job) => { /* TODO: open edit job flow */ }}
         onPublish={(job) => { /* TODO: publish job */ }}

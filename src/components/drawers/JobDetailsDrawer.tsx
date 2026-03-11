@@ -94,12 +94,24 @@ export interface JobCandidateItem {
   lastActivity: string;
 }
 
+/** Version option for the job version dropdown (e.g. Version 1, Current) */
+export interface JobVersionOption {
+  id: string;
+  label: string;
+}
+
 export interface JobDetailsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   job: JobForDrawer | null;
   /** Candidates applied/sourced for the current job (for Candidates tab) */
   jobCandidates?: JobCandidateItem[];
+  /** Version options shown in the dropdown at top of info section. When user selects a version, onVersionChange is called and parent should refresh job data. */
+  jobVersions?: JobVersionOption[];
+  /** Currently selected version id (must match one of jobVersions). */
+  selectedVersionId?: string;
+  /** Called when user selects a different version; parent should load that version's job and pass it via job prop. */
+  onVersionChange?: (versionId: string) => void;
   /** Custom pipeline stages for this job (for Pipeline tab config). If not provided, default stages are used. */
   pipelineStages?: JobPipelineStage[];
   /** Called when pipeline stages are reordered, added, or removed */
@@ -206,13 +218,16 @@ export function JobDetailsDrawer({
   isOpen,
   onClose,
   job,
+  jobVersions,
+  selectedVersionId,
+  onVersionChange,
+  jobCandidates = [],
+  pipelineStages: initialPipelineStages,
+  onPipelineStagesChange,
   onEdit,
   onPublish,
   onClone,
   onCloseJob,
-  jobCandidates = [],
-  pipelineStages: initialPipelineStages,
-  onPipelineStagesChange,
   onMoveStage,
   onScheduleInterview,
   onRejectCandidate,
@@ -355,7 +370,28 @@ export function JobDetailsDrawer({
 
           {/* Right-side info panel (inline in header area) */}
           {job && (
-            <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
+            <div className="mt-4 pt-4 border-t border-slate-100 space-y-4">
+              {jobVersions && jobVersions.length > 0 && (
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
+                  <div className="col-span-2">
+                    <span className="text-slate-400 font-medium block mb-1">Version</span>
+                    <select
+                      value={selectedVersionId ?? jobVersions[0]?.id ?? ''}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        if (id && id !== (selectedVersionId ?? jobVersions[0]?.id)) onVersionChange?.(id);
+                      }}
+                      className="w-full max-w-[220px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                      aria-label="Select job version"
+                    >
+                      {jobVersions.map((v) => (
+                        <option key={v.id} value={v.id}>{v.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
               <div>
                 <span className="text-slate-400 font-medium">Job ID</span>
                 <p className="font-mono text-slate-700 mt-0.5">{job.id}</p>
@@ -379,6 +415,7 @@ export function JobDetailsDrawer({
                     {job.status}
                   </span>
                 </p>
+              </div>
               </div>
             </div>
           )}
